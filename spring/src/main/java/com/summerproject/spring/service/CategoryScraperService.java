@@ -70,23 +70,17 @@ public class CategoryScraperService {
 			try {
 				Document document = Jsoup.connect(url).get();
 				Element paginationElement = document.selectFirst("nav.pagination");
-				Elements pageLinks = paginationElement.select("ul > li.page-item > a.page-link");
-				//Element lastPageLink = paginationElement.selectFirst("ul li.page-item:last-child > a.page-link");
+				Elements pageLinks = paginationElement.select("ul > li.page-item");
 				Elements subCategoryElements = document.select("li.derin > a");
 				int maxPageNumber = 1;
 				
-				for(int i = pageLinks.size() -1; i > 0; i--) {
-					Element pageLink = pageLinks.get(i);
-					String pageNumberText = pageLink.text().trim();
-					try {
-						maxPageNumber = Integer.parseInt(pageNumberText);
-						break;
-					}
-					catch (NumberFormatException e) {
-						continue;
-					}
+				try {
+					maxPageNumber = Integer.parseInt(pageLinks.get(pageLinks.size()-2).select("a.page-link").attr("title"));
 				}
-
+				catch (NumberFormatException e) {
+					e.printStackTrace();
+				}
+				
 				for (Element subCategoryElement : subCategoryElements) {
 					String subCategoryName = subCategoryElement.text();
 					String subCategoryLink = subCategoryElement.attr("href");
@@ -103,7 +97,6 @@ public class CategoryScraperService {
 					
 
 					subCategories.add(subCategory);
-
 				}
 			} catch (IOException e) {
 				// Handle exception appropriately
@@ -126,11 +119,13 @@ public class CategoryScraperService {
 	        for(int page = 1; page <= pages; page++) {
 	        	url= url + "?page=" + page;
 	        	
+	        	System.out.println(subCategory.getSubCategoryName() + " için Sayfa: "+ page);
+	        	
 	        	try {
 					Document document = Jsoup.connect(url).get();
 					
 					Elements productElements = document.select("html > body > section > section:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(3) > div > div:nth-of-type(2) > div:nth-of-type(2) > div > ul > li");
-
+					
 					for (Element productElement : productElements) {
 						long marketProductId = Long.parseLong(productElement.select("article.product-card").attr("data-sku").replaceAll("[^0-9]",""));
 						String productName = productElement.select("h3.name").text();
