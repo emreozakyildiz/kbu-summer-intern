@@ -6,14 +6,14 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.1.1</version>
+		<version>3.0.10-SNAPSHOT</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.summer-project</groupId>
-	<artifactId>spring</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>spring</name>
-	<description>My summer project</description>
+	<groupId>com.internship</groupId>
+	<artifactId>crawler4j-summer</artifactId>
+	<version>0.1</version>
+	<name>crawler4j-summer</name>
+	<description>Crawler4j library applicatioıns</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -33,19 +33,14 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
+			<groupId>edu.uci.ics</groupId>
+			<artifactId>crawler4j</artifactId>
+			<version>4.4.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-			<version>1.15.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>4.11.0</version>
 		</dependency>
 	</dependencies>
 
@@ -57,5 +52,41 @@
 			</plugin>
 		</plugins>
 	</build>
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</pluginRepository>
+	</pluginRepositories>
 
 </project>

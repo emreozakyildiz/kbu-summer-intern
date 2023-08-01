@@ -39,6 +39,8 @@ public class CategoryController {
 	
 	@GetMapping("/categories")
 	public ResponseEntity<List<Category>> getAllCategories(){
+		categoryService.addCategories(categoryScraperService.scrapeCategoriesFromTrendyol());
+		//categoryService.addCategories(categoryScraperService.scrapeCategoriesFromMigros());
 		categoryService.addCategories(categoryScraperService.scrapeCategoriesFromA101());
 		List<Category> categories = categoryService.getAllCategories();
 		return new ResponseEntity<List<Category>>(categories, HttpStatus.OK);
