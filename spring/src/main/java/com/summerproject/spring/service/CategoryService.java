@@ -36,6 +36,10 @@ public class CategoryService {
 		return categoryRepository.findAll();
 	}
 	
+	public List<Category> getAllCategoriesByMarket(int marketId){
+		return categoryRepository.findAllByMarketId(marketId);
+	}
+	
 	public List<SubCategory> getAllSubCategories(){
 		return subCategoryRepository.findAll();
 	}

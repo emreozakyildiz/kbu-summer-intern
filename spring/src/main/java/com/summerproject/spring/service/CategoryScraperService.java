@@ -150,11 +150,11 @@ public class CategoryScraperService {
 	}
 
 	public List<SubCategory> scrapeSubCategoriesFromA101() {
-
-		List<Category> categories = categoryService.getAllCategories();
-		List<SubCategory> subCategories = new ArrayList<SubCategory>();
 		final String baseUrl = "https://www.a101.com.tr";
 		final int marketId = 1;
+		List<Category> categories = categoryService.getAllCategoriesByMarket(marketId);
+		List<SubCategory> subCategories = new ArrayList<SubCategory>();
+		
 
 		for (Category category : categories) {
 			String url = category.getCategoryLink();
@@ -190,6 +190,51 @@ public class CategoryScraperService {
 					subCategories.add(subCategory);
 				}
 			} catch (IOException e) {
+				// Handle exception appropriately
+				e.printStackTrace();
+			}
+		}
+		return subCategories;
+	}
+	
+	public List<SubCategory> scrapeSubCategoriesFromTrendyol() {
+		final String baseUrl = "https://www.trendyol.com";
+		final int marketId = 3;
+		int maxPageNumber = 1;
+		
+		List<Category> categories = categoryService.getAllCategoriesByMarket(marketId);
+		List<SubCategory> subCategories = new ArrayList<SubCategory>();
+		
+		WebDriver webDriver = new FirefoxDriver();
+		Actions actions = new Actions(webDriver);
+		webDriver.get(categories.get(0).getCategoryLink());
+
+		WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
+
+		Document document = Jsoup.parse(webDriver.getPageSource());
+		Elements subCategoryElements = document.select("div.sub-nav a.sub-category-header");
+		webDriver.close();
+
+		for (Category category : categories) {
+
+			try {
+				for (Element subCategoryElement : subCategoryElements) {
+					String subCategoryName = subCategoryElement.text();
+					String subCategoryLink = subCategoryElement.attr("href");
+
+					if (categoryService.subCategoryExists(subCategoryName, marketId))
+						continue;
+
+					SubCategory subCategory = new SubCategory();
+					subCategory.setSubCategoryName(subCategoryName);
+					subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
+					subCategory.setParentCategoryId(category.getCategoryId());
+					subCategory.setPages(maxPageNumber);
+					subCategory.setMarketId(marketId);
+
+					subCategories.add(subCategory);
+				}
+			} catch (Exception e) {
 				// Handle exception appropriately
 				e.printStackTrace();
 			}

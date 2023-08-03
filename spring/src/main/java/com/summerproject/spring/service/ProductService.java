@@ -28,6 +28,10 @@ public class ProductService {
 		return productRepository.findAll();
 	}
 	
+	public List<Product> getProductsByMarket(int marketId){
+		return productRepository.findAllByMarketId(marketId);
+	}
+	
 	public boolean productExists(String productName, int marketId) {
 		Optional<Product> existingProduct = productRepository.findByProductNameAndMarketId(productName, marketId);
 		return existingProduct.isPresent();
