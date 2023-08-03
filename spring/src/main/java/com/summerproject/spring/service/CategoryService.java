@@ -44,6 +44,10 @@ public class CategoryService {
 		return subCategoryRepository.findAll();
 	}
 	
+	public List<SubCategory> getAllSubCategoriesByMarket(int marketId) {
+		return subCategoryRepository.findAllByMarketId(marketId);
+	}
+	
 	public boolean categoryExists(String categoryName, int marketId) {
         Category existingCategory = categoryRepository.findByCategoryNameAndMarketId(categoryName, marketId);
         return existingCategory != null;
@@ -53,5 +57,4 @@ public class CategoryService {
 		SubCategory existingSubCategory = subCategoryRepository.findBySubCategoryNameAndMarketId(subCategoryName, marketId);
 		return existingSubCategory != null;
 	}
-
 }

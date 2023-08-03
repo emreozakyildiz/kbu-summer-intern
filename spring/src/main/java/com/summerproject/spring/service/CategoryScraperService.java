@@ -154,7 +154,6 @@ public class CategoryScraperService {
 		final int marketId = 1;
 		List<Category> categories = categoryService.getAllCategoriesByMarket(marketId);
 		List<SubCategory> subCategories = new ArrayList<SubCategory>();
-		
 
 		for (Category category : categories) {
 			String url = category.getCategoryLink();
@@ -196,15 +195,15 @@ public class CategoryScraperService {
 		}
 		return subCategories;
 	}
-	
+
 	public List<SubCategory> scrapeSubCategoriesFromTrendyol() {
 		final String baseUrl = "https://www.trendyol.com";
 		final int marketId = 3;
 		int maxPageNumber = 1;
-		
+
 		List<Category> categories = categoryService.getAllCategoriesByMarket(marketId);
 		List<SubCategory> subCategories = new ArrayList<SubCategory>();
-		
+
 		WebDriver webDriver = new FirefoxDriver();
 		Actions actions = new Actions(webDriver);
 		webDriver.get(categories.get(0).getCategoryLink());
@@ -243,10 +242,10 @@ public class CategoryScraperService {
 	}
 
 	public List<Product> scrapeProductsFromA101() {
-		List<SubCategory> subCategories = categoryService.getAllSubCategories();
-		List<Product> products = new ArrayList<>();
 		final String baseUrl = "https://www.a101.com.tr";
 		int marketId = 1;
+		List<SubCategory> subCategories = categoryService.getAllSubCategoriesByMarket(marketId);
+		List<Product> products = new ArrayList<>();
 
 		for (SubCategory subCategory : subCategories) {
 			String url = subCategory.getSubCategoryLink();
@@ -294,6 +293,78 @@ public class CategoryScraperService {
 					e.printStackTrace();
 				}
 			}
+		}
+		return products;
+	}
+
+	public List<Product> scrapeProductsFromTrendyol() {
+		final String baseUrl = "https://www.trendyol.com";
+		int marketId = 3;
+		long defaultMarketProductId = 0;
+		List<SubCategory> subCategories = categoryService.getAllSubCategoriesByMarket(marketId);
+		List<Product> products = new ArrayList<>();
+
+		for (SubCategory subCategory : subCategories) {
+			String url = subCategory.getSubCategoryLink();
+			
+			WebDriver webDriver = new FirefoxDriver();
+			Actions actions = new Actions(webDriver);
+			webDriver.get(url);
+			
+			JavascriptExecutor jsExecutor = (JavascriptExecutor) webDriver;
+			while(true) {
+				long currentHeight = (long) jsExecutor.executeScript("return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );");
+	            jsExecutor.executeScript("window.scrollTo(0, " + currentHeight + ");");
+	            try {
+	                Thread.sleep(2000);
+	            } catch (InterruptedException e) {
+	                e.printStackTrace();
+	            }
+	            long newHeight = (long) jsExecutor.executeScript("return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );");
+	            if (newHeight == currentHeight) {
+	                break;
+	            }
+			}
+
+			try {
+				Document document = Jsoup.parse(webDriver.getPageSource());
+				webDriver.close();
+
+				Elements productElements = document.select(".p-card-chldrn-cntnr");
+
+				for (Element productElement : productElements) {
+					String productName = productElement.select(".prdct-desc-cntnr-name").attr("title");
+					System.out.println("Product Name : " + productName);
+					System.out.println("Product Price: " + productElement.select(".prc-box-dscntd").text().split(" ")[0]);
+					double productPrice = Double.parseDouble(productElement.select(".prc-box-dscntd").text().split(" ")[0].replace(",", "."));
+					
+					String imageUrl = productElement.select(".p-card-img").attr("src");
+					System.out.println("Product Image : " + imageUrl);
+					String productUrl = baseUrl + productElement.select("a").attr("href");
+					System.out.println("Product Url : " + productUrl);
+					System.out.println("-----------");
+
+					if (productService.productExists(productName, marketId)) {
+						System.out.println("Exists!");
+						continue;
+					}
+					Product product = new Product();
+					product.setSubCategoryId(subCategory.getSubCategoryId());
+					product.setCategoryId(subCategory.getParentCategoryId());
+					product.setMarketProductId(defaultMarketProductId);
+					product.setProductName(productName);
+					product.setProductPrice(productPrice);
+					product.setImageUrl(imageUrl);
+					product.setProductUrl(productUrl);
+					product.setMarketId(marketId);
+
+					products.add(product);
+				}
+			} catch (Exception e) {
+				// Handle exception appropriately
+				e.printStackTrace();
+			}
+			break;
 		}
 		return products;
 	}
