@@ -7,10 +7,10 @@ import com.internship.summer.service.CrawlerService;
 
 @SpringBootApplication
 public class Crawler4jSummerApplication {
+	private CrawlerService crawlerService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(Crawler4jSummerApplication.class, args);
-		CrawlerService cs;
 	}
 
 }
