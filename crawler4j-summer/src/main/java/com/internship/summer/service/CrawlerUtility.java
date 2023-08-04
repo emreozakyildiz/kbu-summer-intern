@@ -13,11 +13,11 @@ import edu.uci.ics.crawler4j.url.WebURL;
 public class CrawlerUtility extends WebCrawler {
 	private final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|gif|jpg" + "|png|mp3|mp4|zip|gz))$");
 	private final File storageFolder;
-	
+
 	public CrawlerUtility() {
 		String path = "data/a101";
 		storageFolder = new File(path);
-		if(!storageFolder.exists()) {
+		if (!storageFolder.exists()) {
 			storageFolder.mkdirs();
 		}
 	}
@@ -25,7 +25,8 @@ public class CrawlerUtility extends WebCrawler {
 	@Override
 	public boolean shouldVisit(Page referringPage, WebURL url) {
 		String href = url.getURL().toLowerCase();
-		return !FILTERS.matcher(href).matches() && (href.startsWith("https://www.a101.com.tr") || href.startsWith("https://www.trendyol.com"));
+		return !FILTERS.matcher(href).matches() && (href.startsWith("https://www.a101.com.tr")
+				|| href.startsWith("https://www.trendyol.com") || href.startsWith("https://www.amazon.com.tr"));
 	}
 
 	@Override
@@ -36,27 +37,27 @@ public class CrawlerUtility extends WebCrawler {
 		if (page.getParseData() instanceof HtmlParseData) {
 			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
 			String html = htmlParseData.getHtml();
-			
+
 			try {
-                String path = url.substring("https://".length());
-                String[] pathSegments = path.split("/");
+				String path = url.substring("https://".length());
+				String[] pathSegments = path.split("/");
 
-                File currentFolder = storageFolder;
-                for (String segment : pathSegments) {
-                    File newFolder = new File(currentFolder, segment);
-                    if (!newFolder.exists()) {
-                        newFolder.mkdirs();
-                    }
-                    currentFolder = newFolder;
-                }
+				File currentFolder = storageFolder;
+				for (String segment : pathSegments) {
+					File newFolder = new File(currentFolder, segment);
+					if (!newFolder.exists()) {
+						newFolder.mkdirs();
+					}
+					currentFolder = newFolder;
+				}
 
-                File file = new File(currentFolder, String.valueOf(url.hashCode()) + ".html");
-                FileWriter writer = new FileWriter(file);
-                writer.write(html);
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+				File file = new File(currentFolder, String.valueOf(url.hashCode()) + ".html");
+				FileWriter writer = new FileWriter(file);
+				writer.write(html);
+				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

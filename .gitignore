@@ -1,3 +1,4 @@
 # Ignore the "crawler4j-summer/data" directory and its contents
 crawler4j-summer/data/
-
+# Ignore the "crawler4j-summer/log" directory and its contents
+crawler4j-summer/log/
