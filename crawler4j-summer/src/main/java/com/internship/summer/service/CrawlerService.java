@@ -1,7 +1,5 @@
 package com.internship.summer.service;
 
-import java.io.File;
-
 import org.springframework.stereotype.Service;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;

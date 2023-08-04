@@ -1,4 +1,4 @@
-package com.summerproject.spring.service;
+package com.internship.crawler.service;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -19,9 +19,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
 
-import com.summerproject.spring.model.Category;
-import com.summerproject.spring.model.Product;
-import com.summerproject.spring.model.SubCategory;
+import com.internship.crawler.model.Category;
+import com.internship.crawler.model.Product;
+import com.internship.crawler.model.SubCategory;
 
 @Service
 public class CategoryScraperService {

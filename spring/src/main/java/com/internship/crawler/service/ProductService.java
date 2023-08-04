@@ -1,12 +1,12 @@
-package com.summerproject.spring.service;
+package com.internship.crawler.service;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.summerproject.spring.model.Product;
-import com.summerproject.spring.repository.ProductRepository;
+import com.internship.crawler.model.Product;
+import com.internship.crawler.repository.ProductRepository;
 
 @Service
 public class ProductService {

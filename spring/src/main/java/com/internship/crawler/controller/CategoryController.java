@@ -1,4 +1,4 @@
-package com.summerproject.spring.controller;
+package com.internship.crawler.controller;
 
 import java.util.List;
 
@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.summerproject.spring.model.Category;
-import com.summerproject.spring.model.Product;
-import com.summerproject.spring.model.SubCategory;
-import com.summerproject.spring.service.CategoryScraperService;
-import com.summerproject.spring.service.CategoryService;
-import com.summerproject.spring.service.ProductService;
+import com.internship.crawler.model.Category;
+import com.internship.crawler.model.Product;
+import com.internship.crawler.model.SubCategory;
+import com.internship.crawler.service.CategoryScraperService;
+import com.internship.crawler.service.CategoryService;
+import com.internship.crawler.service.ProductService;
 
 @RestController
 @RequestMapping("/api")

@@ -1,13 +1,13 @@
-package com.summerproject.spring.service;
+package com.internship.crawler.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.summerproject.spring.model.Category;
-import com.summerproject.spring.model.SubCategory;
-import com.summerproject.spring.repository.CategoryRepository;
-import com.summerproject.spring.repository.SubCategoryRepository;
+import com.internship.crawler.model.Category;
+import com.internship.crawler.model.SubCategory;
+import com.internship.crawler.repository.CategoryRepository;
+import com.internship.crawler.repository.SubCategoryRepository;
 
 @Service
 public class CategoryService {

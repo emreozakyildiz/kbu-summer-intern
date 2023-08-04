@@ -10,7 +10,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.summer-project</groupId>
-	<artifactId>spring</artifactId>
+	<artifactId>jsoup-crawler-main</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>spring</name>
 	<description>My summer project</description>

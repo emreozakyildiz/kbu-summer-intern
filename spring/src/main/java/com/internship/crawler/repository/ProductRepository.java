@@ -1,11 +1,11 @@
-package com.summerproject.spring.repository;
+package com.internship.crawler.repository;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.summerproject.spring.model.Product;
+import com.internship.crawler.model.Product;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 	Optional<Product> findByProductNameAndMarketId(String productName, int marketId);
