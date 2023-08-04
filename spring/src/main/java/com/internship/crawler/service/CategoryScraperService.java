@@ -14,6 +14,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -114,7 +115,9 @@ public class CategoryScraperService {
 		List<Category> categories = new ArrayList<Category>();
 
 		try {
-			WebDriver webDriver = new FirefoxDriver();
+			FirefoxOptions firefoxOptions = new FirefoxOptions();
+			firefoxOptions.addArguments("-headless");
+			WebDriver webDriver = new FirefoxDriver(firefoxOptions);
 			Actions actions = new Actions(webDriver);
 			webDriver.get(url);
 
@@ -203,7 +206,9 @@ public class CategoryScraperService {
 		List<Category> categories = categoryService.getAllCategoriesByMarket(marketId);
 		List<SubCategory> subCategories = new ArrayList<SubCategory>();
 
-		WebDriver webDriver = new FirefoxDriver();
+		FirefoxOptions firefoxOptions = new FirefoxOptions();
+		firefoxOptions.addArguments("-headless");
+		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
 		Actions actions = new Actions(webDriver);
 		webDriver.get(categories.get(0).getCategoryLink());
 
@@ -306,7 +311,9 @@ public class CategoryScraperService {
 		for (SubCategory subCategory : subCategories) {
 			String url = subCategory.getSubCategoryLink();
 			
-			WebDriver webDriver = new FirefoxDriver();
+			FirefoxOptions firefoxOptions = new FirefoxOptions();
+			firefoxOptions.addArguments("-headless");
+			WebDriver webDriver = new FirefoxDriver(firefoxOptions);
 			Actions actions = new Actions(webDriver);
 			webDriver.get(url);
 			
