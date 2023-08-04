@@ -20,6 +20,7 @@ public class CrawlerService{
 		CrawlConfig config = new CrawlConfig();
 		
 		config.setCrawlStorageFolder(crawlStorageFolder);
+		config.setPolitenessDelay(10000);
 
         PageFetcher pageFetcher = new PageFetcher(config);
         RobotstxtConfig robotstxtConfig = new RobotstxtConfig();
