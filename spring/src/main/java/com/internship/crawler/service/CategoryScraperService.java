@@ -346,7 +346,7 @@ public class CategoryScraperService {
 					
 					String imageUrl = productElement.select(".p-card-img").attr("src");
 					System.out.println("Product Image : " + imageUrl);
-					String productUrl = baseUrl + productElement.select("a").attr("href");
+					String productUrl = baseUrl + productElement.select("a").attr("href").split("\\?advertItems")[0];
 					System.out.println("Product Url : " + productUrl);
 					System.out.println("-----------");
 
