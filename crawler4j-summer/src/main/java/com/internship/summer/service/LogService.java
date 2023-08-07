@@ -10,8 +10,11 @@ import org.springframework.stereotype.Service;
 public class LogService {
 	private PrintStream outputPrintStream;
     private PrintStream errorPrintStream;
+    private String marketName;
 
-    public LogService(String marketName) {
+    public LogService() {
+    	this.marketName = "trendyol";
+    	
     	File logFolder = new File("log");
         if (!logFolder.exists()) {
             logFolder.mkdirs(); // Create the log folder and its parents if they don't exist

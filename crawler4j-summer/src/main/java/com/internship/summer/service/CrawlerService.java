@@ -18,11 +18,12 @@ public class CrawlerService{
 	private final int numberOfThreads = 4; 
 
 	public CrawlerService(LogService logService) throws Exception{
-		this.logService = new LogService(marketUrl);
+		this.logService = logService;
 		CrawlConfig config = new CrawlConfig();
 		
 		config.setCrawlStorageFolder(crawlStorageFolder);
-		config.setPolitenessDelay(10000);
+		config.setPolitenessDelay(1000);
+		config.setResumableCrawling(true);
 
         PageFetcher pageFetcher = new PageFetcher(config);
         RobotstxtConfig robotstxtConfig = new RobotstxtConfig();
