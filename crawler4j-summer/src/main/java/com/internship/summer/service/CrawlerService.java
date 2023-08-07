@@ -1,6 +1,5 @@
 package com.internship.summer.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
@@ -12,13 +11,14 @@ import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 @Service
 public class CrawlerService{
 	private final LogService logService;
-	String crawlStorageFolder = "data";
+	final String crawlStorageFolder = "data";
+	final String marketUrl = "https://www.trendyol.com";
 	//String crawlStorageFolder = System.getProperty("java.io.tmpdir") + File.separator + "crawl-data";
 
 	private final int numberOfThreads = 4; 
 
 	public CrawlerService(LogService logService) throws Exception{
-		this.logService = logService;
+		this.logService = new LogService(marketUrl);
 		CrawlConfig config = new CrawlConfig();
 		
 		config.setCrawlStorageFolder(crawlStorageFolder);
@@ -29,7 +29,7 @@ public class CrawlerService{
         RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
         CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
 
-    	controller.addSeed("https://www.trendyol.com");
+    	controller.addSeed(marketUrl);
     	
     	// The factory which creates instances of crawlers.
         CrawlController.WebCrawlerFactory<CrawlerUtility> factory = CrawlerUtility::new;

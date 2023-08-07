@@ -11,15 +11,15 @@ public class LogService {
 	private PrintStream outputPrintStream;
     private PrintStream errorPrintStream;
 
-    public LogService() {
+    public LogService(String marketName) {
     	File logFolder = new File("log");
         if (!logFolder.exists()) {
             logFolder.mkdirs(); // Create the log folder and its parents if they don't exist
         }
         
         // Define the log file names
-        File outputLogFile = new File(logFolder,"output.log");
-        File errorLogFile = new File(logFolder,"error.log");
+        File outputLogFile = new File(logFolder,marketName + "_output.log");
+        File errorLogFile = new File(logFolder,marketName + "_error.log");
 
         try {
             // Create FileOutputStreams for the log files
