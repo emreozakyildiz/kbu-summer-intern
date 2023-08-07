@@ -15,7 +15,7 @@ public class CrawlerUtility extends WebCrawler {
 	private final File storageFolder;
 
 	public CrawlerUtility() {
-		String path = "data/a101";
+		String path = "data/trendyol";
 		storageFolder = new File(path);
 		if (!storageFolder.exists()) {
 			storageFolder.mkdirs();
@@ -39,6 +39,10 @@ public class CrawlerUtility extends WebCrawler {
 			String html = htmlParseData.getHtml();
 
 			try {
+				int endIndex = url.indexOf("?advertItems=");
+	            if (endIndex != -1) {
+	                url = url.substring(0, endIndex);
+	            }
 				String path = url.substring("https://".length());
 				String[] pathSegments = path.split("/");
 
