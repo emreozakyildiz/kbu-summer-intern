@@ -74,7 +74,10 @@ public class CategoryScraperService {
 		List<Category> categories = new ArrayList<Category>();
 
 		try {
-			WebDriver webDriver = new FirefoxDriver();
+			FirefoxOptions firefoxOptions = new FirefoxOptions();
+			firefoxOptions.addArguments("-headless");
+			WebDriver webDriver = new FirefoxDriver(firefoxOptions);
+
 			Actions actions = new Actions(webDriver);
 			webDriver.get(url);
 
@@ -83,9 +86,12 @@ public class CategoryScraperService {
 			WebElement popUpButton = wait
 					.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div.popover fa-icon")));
 			popUpButton.click();
+			WebElement policyButton = wait
+					.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.mat-caption:nth-child(1)")));
+			policyButton.click();
 
-			WebElement policyButton = webDriver
-					.findElement(By.cssSelector("action-buttons.button.map-caption.btn.settings"));
+			// WebElement policyButton = webDriver
+			// .findElement(By.cssSelector("button.mat-caption:nth-child(1)"));
 			// wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.map-caption.btn.settings")));
 			// JavascriptExecutor jsExecutor = (JavascriptExecutor) webDriver;
 			// jsExecutor.executeScript("argument[0].remove", policyButton);
@@ -93,13 +99,35 @@ public class CategoryScraperService {
 
 			// WebElement element =
 			// webDriver.findElement(By.cssSelector("div.tab.mat-caption.text-color-black"));
-			WebElement element = webDriver.findElement(By.xpath("header-bottom"));
-			WebElement parentElement = element.findElement(By.cssSelector(":first-child"));
-			actions.moveToElement(parentElement).click();
+			WebElement categoriesIcon = wait.until(
+					ExpectedConditions.elementToBeClickable(By.cssSelector(".categories-icon > span:nth-child(1)")));
+			actions.moveToElement(categoriesIcon).perform();
 
+			// Get the page source after interacting with the website
 			String pageSource = webDriver.getPageSource();
 
+			webDriver.close();
+
+			// Pass the page source to Jsoup for parsing
 			Document document = Jsoup.parse(pageSource);
+
+			// Find the categories container
+			// Adjust the selector as needed to match your page structure
+			Elements categoryElements = document.select(".categories-sub-categories-wrapper .categories");
+
+			// Loop through the category elements to extract names and links
+			for (Element categoryElement : categoryElements) {
+				String categoryName = categoryElement.text().trim();
+				String categoryLink = categoryElement.attr("href");
+
+				Category category = new Category();
+				category.setCategoryName(categoryName);
+				category.setCategoryLink(url + categoryLink);
+				category.setMarketId(marketId);
+
+				categories.add(category);
+			}
+
 		} catch (Exception e) {
 			// Handle exception appropriately
 			e.printStackTrace();
@@ -242,6 +270,61 @@ public class CategoryScraperService {
 				e.printStackTrace();
 			}
 		}
+		return subCategories;
+	}
+
+	public List<SubCategory> scrapeSubCategoriesFromMigros() {
+		final String baseUrl = "https://www.migros.com.tr";
+		final int marketId = 2;
+		int maxPageNumber = 1;
+
+		List<Category> categories = categoryService.getAllCategoriesByMarket(marketId);
+		List<SubCategory> subCategories = new ArrayList<SubCategory>();
+
+		FirefoxOptions firefoxOptions = new FirefoxOptions();
+		firefoxOptions.addArguments("-headless");
+		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
+		WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
+		Actions actions = new Actions(webDriver);
+
+		try {
+			for (Category category : categories) {
+				// Visit the category page
+				webDriver.get(category.getCategoryLink());
+
+				// Wait for the sub-category menu to be visible before interacting with it
+				WebElement subCategoryMenu = wait.until(ExpectedConditions
+						.visibilityOfElementLocated(By.cssSelector(".filter__subcategories > div:nth-child(2)")));
+				actions.moveToElement(subCategoryMenu).perform();
+
+				// Parse HTML using Jsoup
+				Document document = Jsoup.parse(webDriver.getPageSource());
+				Elements subCategoryElements = document.select(".items a.text-color-black.mat-body-2.ng-star-inserted");
+
+				for (Element subCategoryElement : subCategoryElements) {
+					String subCategoryName = subCategoryElement.text();
+					String subCategoryLink = subCategoryElement.attr("href");
+
+					if (categoryService.subCategoryExists(subCategoryName, marketId))
+						continue;
+
+					SubCategory subCategory = new SubCategory();
+					subCategory.setSubCategoryName(subCategoryName);
+					subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
+					subCategory.setParentCategoryId(category.getCategoryId());
+					subCategory.setPages(maxPageNumber);
+					subCategory.setMarketId(marketId);
+
+					subCategories.add(subCategory);
+				}
+			}
+		} catch (Exception e) {
+			// Handle exception appropriately
+			e.printStackTrace();
+		} finally {
+			webDriver.quit(); // Make sure to close the WebDriver after use
+		}
+
 		return subCategories;
 	}
 

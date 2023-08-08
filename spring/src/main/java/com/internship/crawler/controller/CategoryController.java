@@ -49,6 +49,7 @@ public class CategoryController {
 
 	@GetMapping("/sub-categories")
 	public ResponseEntity<List<SubCategory>> getAllSubCategories() {
+		categoryService.addSubCategories(categoryScraperService.scrapeSubCategoriesFromMigros());
 		categoryService.addSubCategories(categoryScraperService.scrapeSubCategoriesFromTrendyol());
 		categoryService.addSubCategories(categoryScraperService.scrapeSubCategoriesFromA101());
 		List<SubCategory> subCategories = categoryService.getAllSubCategories();
