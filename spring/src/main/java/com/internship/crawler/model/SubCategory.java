@@ -17,12 +17,13 @@ public class SubCategory {
 	String subCategoryLink;
 	int pages;
 	int marketId;
-	
+
 	public SubCategory() {
-		
+
 	}
-	
-	public SubCategory(long subCategoryId, long parentCategoryId, String subCategoryName, String subCategoryLink,int pages, int marketId) {
+
+	public SubCategory(long subCategoryId, long parentCategoryId, String subCategoryName, String subCategoryLink,
+			int pages, int marketId) {
 		super();
 		this.subCategoryId = subCategoryId;
 		this.parentCategoryId = parentCategoryId;

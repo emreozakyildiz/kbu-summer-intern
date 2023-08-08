@@ -15,23 +15,23 @@ public class ProductService {
 	public ProductService(ProductRepository productRepository) {
 		this.productRepository = productRepository;
 	}
-	
+
 	public Product addProduct(Product product) {
 		return productRepository.save(product);
 	}
-	
-	public List<Product> addProducts (List<Product> products){
+
+	public List<Product> addProducts(List<Product> products) {
 		return productRepository.saveAll(products);
 	}
-	
-	public List<Product> getProducts(){
+
+	public List<Product> getProducts() {
 		return productRepository.findAll();
 	}
-	
-	public List<Product> getProductsByMarket(int marketId){
+
+	public List<Product> getProductsByMarket(int marketId) {
 		return productRepository.findAllByMarketId(marketId);
 	}
-	
+
 	public boolean productExists(String productName, int marketId) {
 		Optional<Product> existingProduct = productRepository.findByProductNameAndMarketId(productName, marketId);
 		return existingProduct.isPresent();

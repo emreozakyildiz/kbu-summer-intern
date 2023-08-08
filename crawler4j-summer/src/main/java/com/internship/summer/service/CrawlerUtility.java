@@ -39,6 +39,7 @@ public class CrawlerUtility extends WebCrawler {
 			String html = htmlParseData.getHtml();
 
 			try {
+				//Url Shortener for Trendyol
 				int endIndex = url.indexOf("?advertItems=");
 	            if (endIndex != -1) {
 	                url = url.substring(0, endIndex);
@@ -52,7 +53,7 @@ public class CrawlerUtility extends WebCrawler {
 					if (!newFolder.exists()) {
 						newFolder.mkdirs();
 					}
-					currentFolder = newFolder;
+					currentFolder = newFolder;	
 				}
 
 				File file = new File(currentFolder, String.valueOf(url.hashCode()) + ".html");

@@ -12,7 +12,7 @@ import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 public class CrawlerService{
 	private final LogService logService;
 	final String crawlStorageFolder = "data";
-	final String marketUrl = "https://www.trendyol.com";
+	final String marketUrl = "https://www.a101.com.tr";
 	//String crawlStorageFolder = System.getProperty("java.io.tmpdir") + File.separator + "crawl-data";
 
 	private final int numberOfThreads = 4; 
@@ -23,8 +23,8 @@ public class CrawlerService{
 		
 		config.setCrawlStorageFolder(crawlStorageFolder);
 		config.setPolitenessDelay(1000);
-		config.setResumableCrawling(true);
-
+		//config.setResumableCrawling(true);
+		
         PageFetcher pageFetcher = new PageFetcher(config);
         RobotstxtConfig robotstxtConfig = new RobotstxtConfig();
         RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);

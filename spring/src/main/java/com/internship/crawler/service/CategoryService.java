@@ -13,48 +13,48 @@ import com.internship.crawler.repository.SubCategoryRepository;
 public class CategoryService {
 	private final CategoryRepository categoryRepository;
 	private final SubCategoryRepository subCategoryRepository;
-	
+
 	public CategoryService(CategoryRepository categoryRepository, SubCategoryRepository subCategoryRepository) {
 		this.categoryRepository = categoryRepository;
 		this.subCategoryRepository = subCategoryRepository;
 	}
-	
+
 	public Category addCategory(Category category) {
 		return categoryRepository.save(category);
-		
 	}
-	
-	public List<Category> addCategories(List<Category> categories){
+
+	public List<Category> addCategories(List<Category> categories) {
 		return categoryRepository.saveAll(categories);
 	}
-	
-	public List<SubCategory> addSubCategories(List<SubCategory> subCategories){
+
+	public List<SubCategory> addSubCategories(List<SubCategory> subCategories) {
 		return subCategoryRepository.saveAll(subCategories);
 	}
-	
-	public List<Category> getAllCategories(){
+
+	public List<Category> getAllCategories() {
 		return categoryRepository.findAll();
 	}
-	
-	public List<Category> getAllCategoriesByMarket(int marketId){
+
+	public List<Category> getAllCategoriesByMarket(int marketId) {
 		return categoryRepository.findAllByMarketId(marketId);
 	}
-	
-	public List<SubCategory> getAllSubCategories(){
+
+	public List<SubCategory> getAllSubCategories() {
 		return subCategoryRepository.findAll();
 	}
-	
+
 	public List<SubCategory> getAllSubCategoriesByMarket(int marketId) {
 		return subCategoryRepository.findAllByMarketId(marketId);
 	}
-	
+
 	public boolean categoryExists(String categoryName, int marketId) {
-        Category existingCategory = categoryRepository.findByCategoryNameAndMarketId(categoryName, marketId);
-        return existingCategory != null;
-    }
-	
+		Category existingCategory = categoryRepository.findByCategoryNameAndMarketId(categoryName, marketId);
+		return existingCategory != null;
+	}
+
 	public boolean subCategoryExists(String subCategoryName, int marketId) {
-		SubCategory existingSubCategory = subCategoryRepository.findBySubCategoryNameAndMarketId(subCategoryName, marketId);
+		SubCategory existingSubCategory = subCategoryRepository.findBySubCategoryNameAndMarketId(subCategoryName,
+				marketId);
 		return existingSubCategory != null;
 	}
 }

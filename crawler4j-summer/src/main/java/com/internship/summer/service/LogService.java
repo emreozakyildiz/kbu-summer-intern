@@ -13,7 +13,7 @@ public class LogService {
     private String marketName;
 
     public LogService() {
-    	this.marketName = "trendyol";
+    	this.marketName = "a101";
     	
     	File logFolder = new File("log");
         if (!logFolder.exists()) {

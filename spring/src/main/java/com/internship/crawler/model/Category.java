@@ -15,11 +15,11 @@ public class Category {
 	String categoryName;
 	String categoryLink;
 	int marketId;
-	
+
 	public Category() {
-		
+
 	}
-	
+
 	public Category(long categoryId, String categoryName, String categoryLink, int marketId) {
 		super();
 		this.categoryId = categoryId;
@@ -59,7 +59,5 @@ public class Category {
 	public void setMarketId(int marketId) {
 		this.marketId = marketId;
 	}
-	
-	
-	
+
 }

@@ -310,26 +310,28 @@ public class CategoryScraperService {
 
 		for (SubCategory subCategory : subCategories) {
 			String url = subCategory.getSubCategoryLink();
-			
+
 			FirefoxOptions firefoxOptions = new FirefoxOptions();
 			firefoxOptions.addArguments("-headless");
 			WebDriver webDriver = new FirefoxDriver(firefoxOptions);
 			Actions actions = new Actions(webDriver);
 			webDriver.get(url);
-			
+
 			JavascriptExecutor jsExecutor = (JavascriptExecutor) webDriver;
-			while(true) {
-				long currentHeight = (long) jsExecutor.executeScript("return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );");
-	            jsExecutor.executeScript("window.scrollTo(0, " + currentHeight + ");");
-	            try {
-	                Thread.sleep(2000);
-	            } catch (InterruptedException e) {
-	                e.printStackTrace();
-	            }
-	            long newHeight = (long) jsExecutor.executeScript("return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );");
-	            if (newHeight == currentHeight) {
-	                break;
-	            }
+			while (true) {
+				long currentHeight = (long) jsExecutor.executeScript(
+						"return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );");
+				jsExecutor.executeScript("window.scrollTo(0, " + currentHeight + ");");
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				long newHeight = (long) jsExecutor.executeScript(
+						"return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );");
+				if (newHeight == currentHeight) {
+					break;
+				}
 			}
 
 			try {
@@ -341,9 +343,11 @@ public class CategoryScraperService {
 				for (Element productElement : productElements) {
 					String productName = productElement.select(".prdct-desc-cntnr-name").attr("title");
 					System.out.println("Product Name : " + productName);
-					System.out.println("Product Price: " + productElement.select(".prc-box-dscntd").text().split(" ")[0]);
-					double productPrice = Double.parseDouble(productElement.select(".prc-box-dscntd").text().split(" ")[0].replace(",", "."));
-					
+					System.out
+							.println("Product Price: " + productElement.select(".prc-box-dscntd").text().split(" ")[0]);
+					double productPrice = Double.parseDouble(
+							productElement.select(".prc-box-dscntd").text().split(" ")[0].replace(",", "."));
+
 					String imageUrl = productElement.select(".p-card-img").attr("src");
 					System.out.println("Product Image : " + imageUrl);
 					String productUrl = baseUrl + productElement.select("a").attr("href").split("\\?advertItems")[0];

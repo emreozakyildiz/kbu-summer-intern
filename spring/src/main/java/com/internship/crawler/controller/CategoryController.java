@@ -24,7 +24,8 @@ public class CategoryController {
 	private final ProductService productService;
 	private final CategoryScraperService categoryScraperService;
 
-	public CategoryController(CategoryService categoryService, ProductService productService, CategoryScraperService categoryScraperService) {
+	public CategoryController(CategoryService categoryService, ProductService productService,
+			CategoryScraperService categoryScraperService) {
 		this.categoryService = categoryService;
 		this.productService = productService;
 		this.categoryScraperService = categoryScraperService;
@@ -34,30 +35,30 @@ public class CategoryController {
 	public ResponseEntity<Category> addCategory(@RequestBody Category category) {
 		Category newCategory = categoryService.addCategory(category);
 		return new ResponseEntity<Category>(newCategory, HttpStatus.CREATED);
-		
+
 	}
-	
+
 	@GetMapping("/categories")
-	public ResponseEntity<List<Category>> getAllCategories(){
-		categoryService.addCategories(categoryScraperService.scrapeCategoriesFromTrendyol());
-		//categoryService.addCategories(categoryScraperService.scrapeCategoriesFromMigros());
-		categoryService.addCategories(categoryScraperService.scrapeCategoriesFromA101());
+	public ResponseEntity<List<Category>> getAllCategories() {
+		// categoryService.addCategories(categoryScraperService.scrapeCategoriesFromTrendyol());
+		categoryService.addCategories(categoryScraperService.scrapeCategoriesFromMigros());
+		// categoryService.addCategories(categoryScraperService.scrapeCategoriesFromA101());
 		List<Category> categories = categoryService.getAllCategories();
 		return new ResponseEntity<List<Category>>(categories, HttpStatus.OK);
 	}
-	
+
 	@GetMapping("/sub-categories")
-	public ResponseEntity<List<SubCategory>> getAllSubCategories(){
+	public ResponseEntity<List<SubCategory>> getAllSubCategories() {
 		categoryService.addSubCategories(categoryScraperService.scrapeSubCategoriesFromTrendyol());
 		categoryService.addSubCategories(categoryScraperService.scrapeSubCategoriesFromA101());
 		List<SubCategory> subCategories = categoryService.getAllSubCategories();
 		return new ResponseEntity<List<SubCategory>>(subCategories, HttpStatus.OK);
 	}
-	
+
 	@GetMapping("/products")
-	public ResponseEntity<List<Product>> getAllProducts(){
+	public ResponseEntity<List<Product>> getAllProducts() {
 		productService.addProducts(categoryScraperService.scrapeProductsFromTrendyol());
-		//productService.addProducts(categoryScraperService.scrapeProductsFromA101());
+		// productService.addProducts(categoryScraperService.scrapeProductsFromA101());
 		List<Product> products = productService.getProducts();
 		return new ResponseEntity<List<Product>>(products, HttpStatus.OK);
 	}

@@ -20,13 +20,13 @@ public class Product {
 	String imageUrl;
 	String productUrl;
 	int marketId;
-	
+
 	public Product() {
-		
+
 	}
 
-	public Product(long productId,long subCategoryId, long categoryId, long marketProductId, String productName, double productPrice, String imageUrl,
-			String productUrl, int marketId) {
+	public Product(long productId, long subCategoryId, long categoryId, long marketProductId, String productName,
+			double productPrice, String imageUrl, String productUrl, int marketId) {
 		super();
 		this.productId = productId;
 		this.subCategoryId = subCategoryId;
@@ -110,7 +110,5 @@ public class Product {
 	public void setMarketId(int marketId) {
 		this.marketId = marketId;
 	}
-	
-	
 
 }
