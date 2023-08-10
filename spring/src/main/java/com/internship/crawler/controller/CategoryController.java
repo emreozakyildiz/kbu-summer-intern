@@ -58,7 +58,8 @@ public class CategoryController {
 
 	@GetMapping("/products")
 	public ResponseEntity<List<Product>> getAllProducts() {
-		productService.addProducts(categoryScraperService.scrapeProductsFromTrendyol());
+		productService.addProducts(categoryScraperService.scrapeProductsFromMigros());
+		// productService.addProducts(categoryScraperService.scrapeProductsFromTrendyol());
 		// productService.addProducts(categoryScraperService.scrapeProductsFromA101());
 		List<Product> products = productService.getProducts();
 		return new ResponseEntity<List<Product>>(products, HttpStatus.OK);

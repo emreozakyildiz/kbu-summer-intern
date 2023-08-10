@@ -384,6 +384,72 @@ public class CategoryScraperService {
 		return products;
 	}
 
+	public List<Product> scrapeProductsFromMigros() {
+		final String baseUrl = "https://www.migros.com.tr";
+		int marketId = 2;
+		long defaultMarketProductId = 0;
+		List<SubCategory> subCategories = categoryService.getAllSubCategoriesByMarket(marketId);
+		List<Product> products = new ArrayList<>();
+
+		for (SubCategory subCategory : subCategories) {
+			String url = subCategory.getSubCategoryLink();
+
+			// FirefoxOptions firefoxOptions = new FirefoxOptions();
+			// firefoxOptions.addArguments("-headless");
+			// WebDriver webDriver = new FirefoxDriver(firefoxOptions);
+			WebDriver webDriver = new FirefoxDriver();
+			Actions actions = new Actions(webDriver);
+			webDriver.get(url);
+
+			try {
+				WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
+				wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(
+						"sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
+
+				Document document = Jsoup.parse(webDriver.getPageSource());
+				webDriver.close();
+
+				Elements productElements = document.select(
+						"sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
+				System.out.println("Product Elements Length: " + productElements.size());
+				for (Element productElement : productElements) {
+					String productName = productElement.select(".mat-caption.text-color-black.product-name").text();
+					System.out.println("Product Name:" + productName);
+					Double productPrice = Double
+							.parseDouble(productElement.select(".price-new.subtitle-1.price-new-only .amount").text()
+									.replace(",", ".").replace("TL", ""));
+					System.out.println("Product Price: " + productPrice);
+					String imageUrl = productElement.select(".fe-product-image.image img").attr("src");
+					System.out.println("Image URL: " + imageUrl);
+					String productUrl = baseUrl
+							+ productElement.select(".mat-caption.text-color-black.product-name").attr("href");
+					System.out.println("Product URL: " + productUrl);
+
+					if (productService.productExists(productName, marketId)) {
+						System.out.println("Exists!");
+						continue;
+					}
+					Product product = new Product();
+					product.setSubCategoryId(subCategory.getSubCategoryId());
+					product.setCategoryId(subCategory.getParentCategoryId());
+					product.setMarketProductId(defaultMarketProductId);
+					product.setProductName(productName);
+					product.setProductPrice(productPrice);
+					product.setImageUrl(imageUrl);
+					product.setProductUrl(productUrl);
+					product.setMarketId(marketId);
+
+					products.add(product);
+				}
+			} catch (Exception e) {
+				// Handle exception appropriately
+				e.printStackTrace();
+			}
+			break;
+		}
+		return products;
+	}
+
 	public List<Product> scrapeProductsFromTrendyol() {
 		final String baseUrl = "https://www.trendyol.com";
 		int marketId = 3;
@@ -457,7 +523,7 @@ public class CategoryScraperService {
 				// Handle exception appropriately
 				e.printStackTrace();
 			}
-			break;
+			// break;
 		}
 		return products;
 	}
