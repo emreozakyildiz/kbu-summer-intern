@@ -25,11 +25,11 @@ import com.internship.crawler.model.Product;
 import com.internship.crawler.model.SubCategory;
 
 @Service
-public class CategoryScraperService {
+public class ScraperService {
 	private final CategoryService categoryService;
 	private final ProductService productService;
 
-	public CategoryScraperService(CategoryService categoryService, ProductService productService) {
+	public ScraperService(CategoryService categoryService, ProductService productService) {
 		this.categoryService = categoryService;
 		this.productService = productService;
 	}
@@ -60,7 +60,6 @@ public class CategoryScraperService {
 
 			}
 		} catch (IOException e) {
-			// Handle exception appropriately
 			e.printStackTrace();
 		}
 
@@ -90,32 +89,18 @@ public class CategoryScraperService {
 					.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.mat-caption:nth-child(1)")));
 			policyButton.click();
 
-			// WebElement policyButton = webDriver
-			// .findElement(By.cssSelector("button.mat-caption:nth-child(1)"));
-			// wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.map-caption.btn.settings")));
-			// JavascriptExecutor jsExecutor = (JavascriptExecutor) webDriver;
-			// jsExecutor.executeScript("argument[0].remove", policyButton);
-			// policyButton.click();
-
-			// WebElement element =
-			// webDriver.findElement(By.cssSelector("div.tab.mat-caption.text-color-black"));
 			WebElement categoriesIcon = wait.until(
 					ExpectedConditions.elementToBeClickable(By.cssSelector(".categories-icon > span:nth-child(1)")));
 			actions.moveToElement(categoriesIcon).perform();
 
-			// Get the page source after interacting with the website
 			String pageSource = webDriver.getPageSource();
 
 			webDriver.close();
 
-			// Pass the page source to Jsoup for parsing
 			Document document = Jsoup.parse(pageSource);
 
-			// Find the categories container
-			// Adjust the selector as needed to match your page structure
 			Elements categoryElements = document.select(".categories-sub-categories-wrapper .categories");
 
-			// Loop through the category elements to extract names and links
 			for (Element categoryElement : categoryElements) {
 				String categoryName = categoryElement.text().trim();
 				String categoryLink = categoryElement.attr("href");
@@ -129,7 +114,6 @@ public class CategoryScraperService {
 			}
 
 		} catch (Exception e) {
-			// Handle exception appropriately
 			e.printStackTrace();
 		}
 
@@ -146,13 +130,9 @@ public class CategoryScraperService {
 			FirefoxOptions firefoxOptions = new FirefoxOptions();
 			firefoxOptions.addArguments("-headless");
 			WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-			Actions actions = new Actions(webDriver);
 			webDriver.get(url);
 
-			WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
-
 			Document document = Jsoup.parse(webDriver.getPageSource());
-			// Document document = Jsoup.connect(url).get();
 			Elements categoryElements = document.select(".main-nav > li");
 			webDriver.close();
 
@@ -172,7 +152,6 @@ public class CategoryScraperService {
 			}
 
 		} catch (Exception e) {
-			// Handle exception appropriately
 			e.printStackTrace();
 		}
 
@@ -219,7 +198,6 @@ public class CategoryScraperService {
 					subCategories.add(subCategory);
 				}
 			} catch (IOException e) {
-				// Handle exception appropriately
 				e.printStackTrace();
 			}
 		}
@@ -237,10 +215,7 @@ public class CategoryScraperService {
 		FirefoxOptions firefoxOptions = new FirefoxOptions();
 		firefoxOptions.addArguments("-headless");
 		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-		Actions actions = new Actions(webDriver);
 		webDriver.get(categories.get(0).getCategoryLink());
-
-		WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
 
 		Document document = Jsoup.parse(webDriver.getPageSource());
 		Elements subCategoryElements = document.select("div.sub-nav a.sub-category-header");
@@ -266,7 +241,6 @@ public class CategoryScraperService {
 					subCategories.add(subCategory);
 				}
 			} catch (Exception e) {
-				// Handle exception appropriately
 				e.printStackTrace();
 			}
 		}
@@ -289,15 +263,12 @@ public class CategoryScraperService {
 
 		try {
 			for (Category category : categories) {
-				// Visit the category page
 				webDriver.get(category.getCategoryLink());
 
-				// Wait for the sub-category menu to be visible before interacting with it
 				WebElement subCategoryMenu = wait.until(ExpectedConditions
 						.visibilityOfElementLocated(By.cssSelector(".filter__subcategories > div:nth-child(2)")));
 				actions.moveToElement(subCategoryMenu).perform();
 
-				// Parse HTML using Jsoup
 				Document document = Jsoup.parse(webDriver.getPageSource());
 				Elements subCategoryElements = document.select(".items a.text-color-black.mat-body-2.ng-star-inserted");
 
@@ -319,10 +290,8 @@ public class CategoryScraperService {
 				}
 			}
 		} catch (Exception e) {
-			// Handle exception appropriately
 			e.printStackTrace();
 		} finally {
-			webDriver.quit(); // Make sure to close the WebDriver after use
 		}
 
 		return subCategories;
@@ -376,7 +345,6 @@ public class CategoryScraperService {
 						products.add(product);
 					}
 				} catch (IOException e) {
-					// Handle exception appropriately
 					e.printStackTrace();
 				}
 			}
@@ -394,23 +362,21 @@ public class CategoryScraperService {
 		for (SubCategory subCategory : subCategories) {
 			String url = subCategory.getSubCategoryLink();
 
-			// FirefoxOptions firefoxOptions = new FirefoxOptions();
-			// firefoxOptions.addArguments("-headless");
-			// WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-			WebDriver webDriver = new FirefoxDriver();
-			Actions actions = new Actions(webDriver);
+			FirefoxOptions firefoxOptions = new FirefoxOptions();
+			firefoxOptions.addArguments("-headless");
+			WebDriver webDriver = new FirefoxDriver(firefoxOptions);
 			webDriver.get(url);
 
 			try {
 				WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
-				wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(
-						"sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
+				wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+						By.cssSelector("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
 
 				Document document = Jsoup.parse(webDriver.getPageSource());
 				webDriver.close();
 
-				Elements productElements = document.select(
-						"sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
+				Elements productElements = document
+						.select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
 				System.out.println("Product Elements Length: " + productElements.size());
 				for (Element productElement : productElements) {
 					String productName = productElement.select(".mat-caption.text-color-black.product-name").text();
@@ -442,10 +408,8 @@ public class CategoryScraperService {
 					products.add(product);
 				}
 			} catch (Exception e) {
-				// Handle exception appropriately
 				e.printStackTrace();
 			}
-			break;
 		}
 		return products;
 	}
@@ -463,7 +427,6 @@ public class CategoryScraperService {
 			FirefoxOptions firefoxOptions = new FirefoxOptions();
 			firefoxOptions.addArguments("-headless");
 			WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-			Actions actions = new Actions(webDriver);
 			webDriver.get(url);
 
 			JavascriptExecutor jsExecutor = (JavascriptExecutor) webDriver;
@@ -520,10 +483,8 @@ public class CategoryScraperService {
 					products.add(product);
 				}
 			} catch (Exception e) {
-				// Handle exception appropriately
 				e.printStackTrace();
 			}
-			// break;
 		}
 		return products;
 	}

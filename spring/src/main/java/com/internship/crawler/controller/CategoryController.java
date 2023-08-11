@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.internship.crawler.model.Category;
 import com.internship.crawler.model.Product;
 import com.internship.crawler.model.SubCategory;
-import com.internship.crawler.service.CategoryScraperService;
+import com.internship.crawler.service.ScraperService;
 import com.internship.crawler.service.CategoryService;
 import com.internship.crawler.service.ProductService;
 
@@ -22,10 +22,10 @@ import com.internship.crawler.service.ProductService;
 public class CategoryController {
 	private final CategoryService categoryService;
 	private final ProductService productService;
-	private final CategoryScraperService categoryScraperService;
+	private final ScraperService categoryScraperService;
 
 	public CategoryController(CategoryService categoryService, ProductService productService,
-			CategoryScraperService categoryScraperService) {
+			ScraperService categoryScraperService) {
 		this.categoryService = categoryService;
 		this.productService = productService;
 		this.categoryScraperService = categoryScraperService;
