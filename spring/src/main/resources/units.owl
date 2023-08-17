@@ -1,0 +1,22 @@
+@prefix ex: <http://example.com/> .
+@prefix schema: <http://schema.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+ex:Unit a owl:Class .
+
+ex:Grams a ex:Unit ;
+ex:abbreviation "kg" ;
+    rdfs:label "grams" .
+
+ex:Liters a ex:Unit ;
+    rdfs:label "liters" .
+
+ex:Kilograms a ex:Unit ;
+    rdfs:label "kilograms" .
+
+# Define more units here...
+
+ex:hasUnit a owl:ObjectProperty ;
+    rdfs:domain schema:Product ;
+    rdfs:range ex:Unit .
+

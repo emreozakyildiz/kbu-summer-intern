@@ -24,6 +24,8 @@ import com.internship.crawler.model.Category;
 import com.internship.crawler.model.Product;
 import com.internship.crawler.model.SubCategory;
 
+import jakarta.persistence.NonUniqueResultException;
+
 @Service
 public class ScraperService {
 	private final CategoryService categoryService;
@@ -64,6 +66,106 @@ public class ScraperService {
 		}
 
 		return categories;
+	}
+
+	public List<SubCategory> scrapeSubCategoriesFromA101(Category category) {
+		final String baseUrl = "https://www.a101.com.tr";
+		final int marketId = 1;
+		List<SubCategory> subCategories = new ArrayList<SubCategory>();
+
+		String url = category.getCategoryLink();
+
+		try {
+			Document document = Jsoup.connect(url).get();
+			Element paginationElement = document.selectFirst("nav.pagination");
+			Elements pageLinks = paginationElement.select("ul > li.page-item");
+			Elements subCategoryElements = document.select("li.derin > a");
+			int maxPageNumber = 1;
+
+			try {
+				maxPageNumber = Integer
+						.parseInt(pageLinks.get(pageLinks.size() - 2).select("a.page-link").attr("title").trim());
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}
+
+			for (Element subCategoryElement : subCategoryElements) {
+				String subCategoryName = subCategoryElement.text();
+				String subCategoryLink = subCategoryElement.attr("href");
+
+				if (categoryService.subCategoryExists(subCategoryName, marketId))
+					continue;
+
+				SubCategory subCategory = new SubCategory();
+				subCategory.setSubCategoryName(subCategoryName);
+				subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
+				subCategory.setCategory(category);
+				subCategory.setPages(maxPageNumber);
+				subCategory.setMarketId(marketId);
+
+				subCategories.add(subCategory);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return subCategories;
+	}
+
+	// Does not work as intended.
+	public List<Product> scrapeProductsFromA101(SubCategory subCategory) {
+		final String baseUrl = "https://www.a101.com.tr";
+		int marketId = 1;
+		List<Product> products = new ArrayList<>();
+
+		String url = subCategory.getSubCategoryLink();
+		int pages = subCategory.getPages();
+
+		for (int page = 1; page <= pages; page++) {
+			url = url + "?page=" + page;
+
+			System.out.println(subCategory.getSubCategoryName() + " için Sayfa: " + page);
+
+			try {
+				Document document = Jsoup.connect(url).get();
+
+				Elements productElements = document.select(
+						"html > body > section > section:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(3) > div > div:nth-of-type(2) > div:nth-of-type(2) > div > ul > li");
+
+				for (Element productElement : productElements) {
+					long marketProductId = Long.parseLong(
+							productElement.select("article.product-card").attr("data-sku").replaceAll("[^0-9]", ""));
+					String productName = productElement.select("h3.name").text();
+					double productPrice = Double
+							.parseDouble((productElement.select("span.current").text()).replaceAll("[^\\d.]", ""));
+					String imageUrl = productElement.select("figure.product-image > img").attr("src");
+					String productUrl = baseUrl + productElement.select("a.name-price").attr("href");
+
+					if (productService.productExists(productName, marketId)) {
+						System.out.println("Exists!");
+						continue;
+					}
+
+					Product product = new Product();
+					product.setCategory(subCategory.getCategory());
+					product.setSubCategory(subCategory);
+					product.setMarketProductId(marketProductId);
+					product.setProductName(productName);
+					product.setProductPrice(productPrice);
+					product.setImageUrl(imageUrl);
+					product.setProductUrl(productUrl);
+					product.setMarketId(marketId);
+
+					products.add(product);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (NonUniqueResultException e) {
+				System.out.println("NonUniqueResultException occurred!");
+			}
+		}
+
+		return products;
 	}
 
 	public List<Category> scrapeCategoriesFromMigros() {
@@ -158,52 +260,6 @@ public class ScraperService {
 		return categories;
 	}
 
-	public List<SubCategory> scrapeSubCategoriesFromA101() {
-		final String baseUrl = "https://www.a101.com.tr";
-		final int marketId = 1;
-		List<Category> categories = categoryService.getAllCategoriesByMarket(marketId);
-		List<SubCategory> subCategories = new ArrayList<SubCategory>();
-
-		for (Category category : categories) {
-			String url = category.getCategoryLink();
-
-			try {
-				Document document = Jsoup.connect(url).get();
-				Element paginationElement = document.selectFirst("nav.pagination");
-				Elements pageLinks = paginationElement.select("ul > li.page-item");
-				Elements subCategoryElements = document.select("li.derin > a");
-				int maxPageNumber = 1;
-
-				try {
-					maxPageNumber = Integer
-							.parseInt(pageLinks.get(pageLinks.size() - 2).select("a.page-link").attr("title"));
-				} catch (NumberFormatException e) {
-					e.printStackTrace();
-				}
-
-				for (Element subCategoryElement : subCategoryElements) {
-					String subCategoryName = subCategoryElement.text();
-					String subCategoryLink = subCategoryElement.attr("href");
-
-					if (categoryService.subCategoryExists(subCategoryName, marketId))
-						continue;
-
-					SubCategory subCategory = new SubCategory();
-					subCategory.setSubCategoryName(subCategoryName);
-					subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
-					subCategory.setParentCategoryId(category.getCategoryId());
-					subCategory.setPages(maxPageNumber);
-					subCategory.setMarketId(marketId);
-
-					subCategories.add(subCategory);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return subCategories;
-	}
-
 	public List<SubCategory> scrapeSubCategoriesFromTrendyol() {
 		final String baseUrl = "https://www.trendyol.com";
 		final int marketId = 3;
@@ -221,33 +277,30 @@ public class ScraperService {
 		Elements subCategoryElements = document.select("div.sub-nav a.sub-category-header");
 		webDriver.close();
 
-		for (Category category : categories) {
+		try {
+			for (Element subCategoryElement : subCategoryElements) {
+				String subCategoryName = subCategoryElement.text();
+				String subCategoryLink = subCategoryElement.attr("href");
 
-			try {
-				for (Element subCategoryElement : subCategoryElements) {
-					String subCategoryName = subCategoryElement.text();
-					String subCategoryLink = subCategoryElement.attr("href");
+				if (categoryService.subCategoryExists(subCategoryName, marketId))
+					continue;
 
-					if (categoryService.subCategoryExists(subCategoryName, marketId))
-						continue;
+				SubCategory subCategory = new SubCategory();
+				subCategory.setSubCategoryName(subCategoryName);
+				subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
+				subCategory.setPages(maxPageNumber);
+				subCategory.setMarketId(marketId);
 
-					SubCategory subCategory = new SubCategory();
-					subCategory.setSubCategoryName(subCategoryName);
-					subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
-					subCategory.setParentCategoryId(category.getCategoryId());
-					subCategory.setPages(maxPageNumber);
-					subCategory.setMarketId(marketId);
-
-					subCategories.add(subCategory);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
+				subCategories.add(subCategory);
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+
 		return subCategories;
 	}
 
-	public List<SubCategory> scrapeSubCategoriesFromMigros() {
+	public List<SubCategory> oldScrapeSubCategoriesFromMigros() {
 		final String baseUrl = "https://www.migros.com.tr";
 		final int marketId = 2;
 		int maxPageNumber = 1;
@@ -282,7 +335,6 @@ public class ScraperService {
 					SubCategory subCategory = new SubCategory();
 					subCategory.setSubCategoryName(subCategoryName);
 					subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
-					subCategory.setParentCategoryId(category.getCategoryId());
 					subCategory.setPages(maxPageNumber);
 					subCategory.setMarketId(marketId);
 
@@ -297,62 +349,54 @@ public class ScraperService {
 		return subCategories;
 	}
 
-	public List<Product> scrapeProductsFromA101() {
-		final String baseUrl = "https://www.a101.com.tr";
-		int marketId = 1;
-		List<SubCategory> subCategories = categoryService.getAllSubCategoriesByMarket(marketId);
-		List<Product> products = new ArrayList<>();
+	public List<SubCategory> scrapeSubCategoriesFromMigros(Category category) {
+		final String baseUrl = "https://www.migros.com.tr";
+		final int marketId = 2;
+		int maxPageNumber = 1;
 
-		for (SubCategory subCategory : subCategories) {
-			String url = subCategory.getSubCategoryLink();
-			int pages = subCategory.getPages();
+		List<SubCategory> subCategories = new ArrayList<SubCategory>();
 
-			for (int page = 1; page <= pages; page++) {
-				url = url + "?page=" + page;
+		FirefoxOptions firefoxOptions = new FirefoxOptions();
+		firefoxOptions.addArguments("-headless");
+		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
+		WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
+		Actions actions = new Actions(webDriver);
 
-				System.out.println(subCategory.getSubCategoryName() + " için Sayfa: " + page);
+		try {
+			webDriver.get(category.getCategoryLink());
 
-				try {
-					Document document = Jsoup.connect(url).get();
+			WebElement subCategoryMenu = wait.until(ExpectedConditions
+					.visibilityOfElementLocated(By.cssSelector(".filter__subcategories > div:nth-child(2)")));
+			actions.moveToElement(subCategoryMenu).perform();
 
-					Elements productElements = document.select(
-							"html > body > section > section:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(3) > div > div:nth-of-type(2) > div:nth-of-type(2) > div > ul > li");
+			Document document = Jsoup.parse(webDriver.getPageSource());
+			Elements subCategoryElements = document.select(".items a.text-color-black.mat-body-2.ng-star-inserted");
 
-					for (Element productElement : productElements) {
-						long marketProductId = Long.parseLong(productElement.select("article.product-card")
-								.attr("data-sku").replaceAll("[^0-9]", ""));
-						String productName = productElement.select("h3.name").text();
-						double productPrice = Double
-								.parseDouble((productElement.select("span.current").text()).replaceAll("[^\\d.]", ""));
-						String imageUrl = productElement.select("figure.product-image > img").attr("src");
-						String productUrl = baseUrl + productElement.select("a.name-price").attr("href");
+			for (Element subCategoryElement : subCategoryElements) {
+				String subCategoryName = subCategoryElement.text();
+				String subCategoryLink = subCategoryElement.attr("href");
 
-						if (productService.productExists(productName, marketId)) {
-							System.out.println("Exists!");
-							continue;
-						}
+				if (categoryService.subCategoryExists(subCategoryName, marketId))
+					continue;
 
-						Product product = new Product();
-						product.setSubCategoryId(subCategory.getSubCategoryId());
-						product.setCategoryId(subCategory.getParentCategoryId());
-						product.setMarketProductId(marketProductId);
-						product.setProductName(productName);
-						product.setProductPrice(productPrice);
-						product.setImageUrl(imageUrl);
-						product.setProductUrl(productUrl);
-						product.setMarketId(marketId);
+				SubCategory subCategory = new SubCategory();
+				subCategory.setSubCategoryName(subCategoryName);
+				subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
+				subCategory.setPages(maxPageNumber);
+				subCategory.setMarketId(marketId);
 
-						products.add(product);
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				subCategories.add(subCategory);
 			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
 		}
-		return products;
+
+		return subCategories;
 	}
 
-	public List<Product> scrapeProductsFromMigros() {
+	public List<Product> oldScrapeProductsFromMigros() {
 		final String baseUrl = "https://www.migros.com.tr";
 		int marketId = 2;
 		long defaultMarketProductId = 0;
@@ -396,8 +440,8 @@ public class ScraperService {
 						continue;
 					}
 					Product product = new Product();
-					product.setSubCategoryId(subCategory.getSubCategoryId());
-					product.setCategoryId(subCategory.getParentCategoryId());
+					// product.setSubCategoryId(subCategory.getSubCategoryId());
+					// product.setCategoryId(subCategory.getParentCategoryId());
 					product.setMarketProductId(defaultMarketProductId);
 					product.setProductName(productName);
 					product.setProductPrice(productPrice);
@@ -411,6 +455,66 @@ public class ScraperService {
 				e.printStackTrace();
 			}
 		}
+		return products;
+	}
+
+	public List<Product> scrapeProductsFromMigros(SubCategory subCategory) {
+		final String baseUrl = "https://www.migros.com.tr";
+		int marketId = 2;
+		long defaultMarketProductId = 0;
+		List<Product> products = new ArrayList<>();
+
+		String url = subCategory.getSubCategoryLink();
+
+		FirefoxOptions firefoxOptions = new FirefoxOptions();
+		firefoxOptions.addArguments("-headless");
+		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
+		webDriver.get(url);
+
+		try {
+			WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
+			wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+					By.cssSelector("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
+
+			Document document = Jsoup.parse(webDriver.getPageSource());
+			webDriver.close();
+
+			Elements productElements = document
+					.select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
+			System.out.println("Product Elements Length: " + productElements.size());
+			for (Element productElement : productElements) {
+				String productName = productElement.select(".mat-caption.text-color-black.product-name").text();
+				System.out.println("Product Name:" + productName);
+				Double productPrice = Double
+						.parseDouble(productElement.select(".price-new.subtitle-1.price-new-only .amount").text()
+								.replace(",", ".").replace("TL", ""));
+				System.out.println("Product Price: " + productPrice);
+				String imageUrl = productElement.select(".fe-product-image.image img").attr("src");
+				System.out.println("Image URL: " + imageUrl);
+				String productUrl = baseUrl
+						+ productElement.select(".mat-caption.text-color-black.product-name").attr("href");
+				System.out.println("Product URL: " + productUrl);
+
+				if (productService.productExists(productName, marketId)) {
+					System.out.println("Exists!");
+					continue;
+				}
+				Product product = new Product();
+				// product.setSubCategoryId(subCategory.getSubCategoryId());
+				// product.setCategoryId(subCategory.getParentCategoryId());
+				product.setMarketProductId(defaultMarketProductId);
+				product.setProductName(productName);
+				product.setProductPrice(productPrice);
+				product.setImageUrl(imageUrl);
+				product.setProductUrl(productUrl);
+				product.setMarketId(marketId);
+
+				products.add(product);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		return products;
 	}
 
@@ -471,8 +575,8 @@ public class ScraperService {
 						continue;
 					}
 					Product product = new Product();
-					product.setSubCategoryId(subCategory.getSubCategoryId());
-					product.setCategoryId(subCategory.getParentCategoryId());
+					// product.setSubCategoryId(subCategory.getSubCategoryId());
+					// product.setCategoryId(subCategory.getParentCategoryId());
 					product.setMarketProductId(defaultMarketProductId);
 					product.setProductName(productName);
 					product.setProductPrice(productPrice);

@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.internship.crawler.model.Category;
 import com.internship.crawler.model.Product;
+import com.internship.crawler.model.SubCategory;
 import com.internship.crawler.repository.ProductRepository;
 
 @Service
@@ -20,7 +22,10 @@ public class ProductService {
 		return productRepository.save(product);
 	}
 
-	public List<Product> addProducts(List<Product> products) {
+	public List<Product> addProducts(List<Product> products, SubCategory subCategory) {
+		for (Product product : products) {
+			product.setSubCategory(subCategory);
+		}
 		return productRepository.saveAll(products);
 	}
 

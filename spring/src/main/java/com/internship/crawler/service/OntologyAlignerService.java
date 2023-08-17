@@ -18,34 +18,34 @@ public class OntologyAlignerService {
 		rdfModel = ModelFactory.createDefaultModel();
 
 	}
-	
+
 	public void alignProducts(List<Product> products) {
-	    for (Product product : products) {
-	        Resource productResource = createProductResource(product);
-	        
-	        for (Product alignedProduct : products) {
-	            if (!alignedProduct.equals(product)) {
-	                Resource alignedProductResource = createProductResource(alignedProduct);
-	                createAlignmentRelationship(productResource, alignedProductResource);
-	            }
-	        }
-	    }
+		for (Product product : products) {
+			Resource productResource = createProductResource(product);
+
+			for (Product alignedProduct : products) {
+				if (!alignedProduct.equals(product)) {
+					Resource alignedProductResource = createProductResource(alignedProduct);
+					createAlignmentRelationship(productResource, alignedProductResource);
+				}
+			}
+		}
 	}
 
 	private void createAlignmentRelationship(Resource product1, Resource product2) {
-	    Property alignsWith = rdfModel.createProperty("http://product-db.com/products#alignsWith");
-	    product1.addProperty(alignsWith, product2);
+		Property alignsWith = rdfModel.createProperty("http://product-db.com/products#alignsWith");
+		product1.addProperty(alignsWith, product2);
 	}
-	
-	private Resource createProductResource(Product product) {
-        Resource productResource = rdfModel.createResource(getProductURI(product));
-        Property nameProperty = rdfModel.createProperty("http://product-db.com/products#name");
-        productResource.addProperty(nameProperty, product.getProductName());
-        return productResource;
-    }
 
-    private String getProductURI(Product product) {
-        return "http://product-db.com/products#" + product.getProductId();
-    }
+	private Resource createProductResource(Product product) {
+		Resource productResource = rdfModel.createResource(getProductURI(product));
+		Property nameProperty = rdfModel.createProperty("http://product-db.com/products#name");
+		productResource.addProperty(nameProperty, product.getProductName());
+		return productResource;
+	}
+
+	private String getProductURI(Product product) {
+		return "http://product-db.com/products#" + product.getProductId();
+	}
 
 }

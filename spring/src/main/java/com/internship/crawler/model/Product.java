@@ -1,9 +1,12 @@
 package com.internship.crawler.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -12,25 +15,28 @@ public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	long productId;
-	long subCategoryId;
-	long categoryId;
 	long marketProductId;
 	String productName;
 	double productPrice;
 	String imageUrl;
 	String productUrl;
 	int marketId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "category_id")
+	private Category category;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "sub_category_id")
+	private SubCategory subCategory;
 
 	public Product() {
 
 	}
 
-	public Product(long productId, long subCategoryId, long categoryId, long marketProductId, String productName,
-			double productPrice, String imageUrl, String productUrl, int marketId) {
+	public Product(long productId, long marketProductId, String productName, double productPrice, String imageUrl,
+			String productUrl, int marketId) {
 		super();
 		this.productId = productId;
-		this.subCategoryId = subCategoryId;
-		this.categoryId = categoryId;
 		this.marketProductId = marketProductId;
 		this.productName = productName;
 		this.productPrice = productPrice;
@@ -39,28 +45,28 @@ public class Product {
 		this.marketId = marketId;
 	}
 
+	public Category getCategory() {
+		return category;
+	}
+
+	public void setCategory(Category category) {
+		this.category = category;
+	}
+
+	public SubCategory getSubCategory() {
+		return subCategory;
+	}
+
+	public void setSubCategory(SubCategory subCategory) {
+		this.subCategory = subCategory;
+	}
+
 	public long getProductId() {
 		return productId;
 	}
 
 	public void setProductId(long productId) {
 		this.productId = productId;
-	}
-
-	public long getSubCategoryId() {
-		return subCategoryId;
-	}
-
-	public void setSubCategoryId(long subCategoryId) {
-		this.subCategoryId = subCategoryId;
-	}
-
-	public long getCategoryId() {
-		return categoryId;
-	}
-
-	public void setCategoryId(long categoryId) {
-		this.categoryId = categoryId;
 	}
 
 	public long getMarketProductId() {
