@@ -112,7 +112,6 @@ public class ScraperService {
 		return subCategories;
 	}
 
-	// Does not work as intended.
 	public List<Product> scrapeProductsFromA101(SubCategory subCategory) {
 		final String baseUrl = "https://www.a101.com.tr";
 		int marketId = 1;
@@ -220,6 +219,146 @@ public class ScraperService {
 		}
 
 		return categories;
+	}
+
+	public List<SubCategory> scrapeSubCategoriesFromMigros(Category category) {
+		final String baseUrl = "https://www.migros.com.tr";
+		final int marketId = 2;
+		int maxPageNumber = 1;
+
+		List<SubCategory> subCategories = new ArrayList<SubCategory>();
+
+		FirefoxOptions firefoxOptions = new FirefoxOptions();
+		firefoxOptions.addArguments("-headless");
+		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
+		WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
+		Actions actions = new Actions(webDriver);
+
+		try {
+			webDriver.get(category.getCategoryLink());
+
+			WebElement subCategoryMenu = wait.until(ExpectedConditions
+					.visibilityOfElementLocated(By.cssSelector(".filter__subcategories > div:nth-child(2)")));
+			actions.moveToElement(subCategoryMenu).perform();
+
+			Document document = Jsoup.parse(webDriver.getPageSource());
+
+			WebElement lastPageButton = webDriver.findElement(By.id("pagination-button-last"));
+
+			if (lastPageButton != null) {
+				lastPageButton.click();
+
+				wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
+				wait.until(ExpectedConditions.urlContains("?sayfa="));
+
+				String currentPageUrl = webDriver.getCurrentUrl();
+
+				int startIndex = currentPageUrl.indexOf("?sayfa=") + 7;
+				int endIndex = currentPageUrl.indexOf("&", startIndex);
+
+				if (endIndex == -1) {
+					endIndex = currentPageUrl.indexOf("=", startIndex);
+				}
+
+				if (startIndex != -1 && endIndex != -1) {
+					String pageNumberStr = currentPageUrl.substring(startIndex, endIndex);
+					maxPageNumber = Integer.parseInt(pageNumberStr);
+				}
+				System.out.println("PageURL: " + currentPageUrl + " , number : " + maxPageNumber);
+			}
+
+			webDriver.close();
+
+			Elements subCategoryElements = document.select(".items a.text-color-black.mat-body-2.ng-star-inserted");
+
+			for (Element subCategoryElement : subCategoryElements) {
+				String subCategoryName = subCategoryElement.text().replaceAll("\\s*\\(\\d+\\)\\s*", "");
+				String subCategoryLink = subCategoryElement.attr("href");
+
+				if (categoryService.subCategoryExists(subCategoryName, marketId))
+					continue;
+
+				SubCategory subCategory = new SubCategory();
+				subCategory.setSubCategoryName(subCategoryName);
+				subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
+				subCategory.setCategory(category);
+				subCategory.setPages(maxPageNumber);
+				subCategory.setMarketId(marketId);
+
+				subCategories.add(subCategory);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return subCategories;
+	}
+
+	public List<Product> scrapeProductsFromMigros(SubCategory subCategory) {
+		final String baseUrl = "https://www.migros.com.tr";
+		int marketId = 2;
+		int pages = subCategory.getPages();
+		long defaultMarketProductId = 0;
+		List<Product> products = new ArrayList<>();
+
+		String url = subCategory.getSubCategoryLink();
+
+		FirefoxOptions firefoxOptions = new FirefoxOptions();
+		firefoxOptions.addArguments("-headless");
+		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
+
+		for (int page = 1; page <= pages; page++) {
+			//url
+		}
+
+		webDriver.get(url);
+
+		try {
+			WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
+			wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+					By.cssSelector("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
+
+			Document document = Jsoup.parse(webDriver.getPageSource());
+			webDriver.close();
+
+			Elements productElements = document
+					.select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
+			System.out.println("Product Elements Length: " + productElements.size());
+			for (Element productElement : productElements) {
+				String productName = productElement.select(".mat-caption.text-color-black.product-name").text();
+				System.out.println("Product Name:" + productName);
+				Double productPrice = Double
+						.parseDouble(productElement.select(".price-new.subtitle-1.price-new-only .amount").text()
+								.replace(",", ".").replace("TL", ""));
+				System.out.println("Product Price: " + productPrice);
+				String imageUrl = productElement.select(".fe-product-image.image img").attr("src");
+				System.out.println("Image URL: " + imageUrl);
+				String productUrl = baseUrl
+						+ productElement.select(".mat-caption.text-color-black.product-name").attr("href");
+				System.out.println("Product URL: " + productUrl);
+
+				if (productService.productExists(productName, marketId)) {
+					System.out.println("Exists!");
+					continue;
+				}
+				Product product = new Product();
+				product.setCategory(subCategory.getCategory());
+				product.setSubCategory(subCategory);
+				product.setMarketProductId(defaultMarketProductId);
+				product.setProductName(productName);
+				product.setProductPrice(productPrice);
+				product.setImageUrl(imageUrl);
+				product.setProductUrl(productUrl);
+				product.setMarketId(marketId);
+
+				products.add(product);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return products;
 	}
 
 	public List<Category> scrapeCategoriesFromTrendyol() {
@@ -349,53 +488,6 @@ public class ScraperService {
 		return subCategories;
 	}
 
-	public List<SubCategory> scrapeSubCategoriesFromMigros(Category category) {
-		final String baseUrl = "https://www.migros.com.tr";
-		final int marketId = 2;
-		int maxPageNumber = 1;
-
-		List<SubCategory> subCategories = new ArrayList<SubCategory>();
-
-		FirefoxOptions firefoxOptions = new FirefoxOptions();
-		firefoxOptions.addArguments("-headless");
-		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-		WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
-		Actions actions = new Actions(webDriver);
-
-		try {
-			webDriver.get(category.getCategoryLink());
-
-			WebElement subCategoryMenu = wait.until(ExpectedConditions
-					.visibilityOfElementLocated(By.cssSelector(".filter__subcategories > div:nth-child(2)")));
-			actions.moveToElement(subCategoryMenu).perform();
-
-			Document document = Jsoup.parse(webDriver.getPageSource());
-			Elements subCategoryElements = document.select(".items a.text-color-black.mat-body-2.ng-star-inserted");
-
-			for (Element subCategoryElement : subCategoryElements) {
-				String subCategoryName = subCategoryElement.text();
-				String subCategoryLink = subCategoryElement.attr("href");
-
-				if (categoryService.subCategoryExists(subCategoryName, marketId))
-					continue;
-
-				SubCategory subCategory = new SubCategory();
-				subCategory.setSubCategoryName(subCategoryName);
-				subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
-				subCategory.setPages(maxPageNumber);
-				subCategory.setMarketId(marketId);
-
-				subCategories.add(subCategory);
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-		}
-
-		return subCategories;
-	}
-
 	public List<Product> oldScrapeProductsFromMigros() {
 		final String baseUrl = "https://www.migros.com.tr";
 		int marketId = 2;
@@ -455,66 +547,6 @@ public class ScraperService {
 				e.printStackTrace();
 			}
 		}
-		return products;
-	}
-
-	public List<Product> scrapeProductsFromMigros(SubCategory subCategory) {
-		final String baseUrl = "https://www.migros.com.tr";
-		int marketId = 2;
-		long defaultMarketProductId = 0;
-		List<Product> products = new ArrayList<>();
-
-		String url = subCategory.getSubCategoryLink();
-
-		FirefoxOptions firefoxOptions = new FirefoxOptions();
-		firefoxOptions.addArguments("-headless");
-		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-		webDriver.get(url);
-
-		try {
-			WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
-			wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
-					By.cssSelector("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
-
-			Document document = Jsoup.parse(webDriver.getPageSource());
-			webDriver.close();
-
-			Elements productElements = document
-					.select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
-			System.out.println("Product Elements Length: " + productElements.size());
-			for (Element productElement : productElements) {
-				String productName = productElement.select(".mat-caption.text-color-black.product-name").text();
-				System.out.println("Product Name:" + productName);
-				Double productPrice = Double
-						.parseDouble(productElement.select(".price-new.subtitle-1.price-new-only .amount").text()
-								.replace(",", ".").replace("TL", ""));
-				System.out.println("Product Price: " + productPrice);
-				String imageUrl = productElement.select(".fe-product-image.image img").attr("src");
-				System.out.println("Image URL: " + imageUrl);
-				String productUrl = baseUrl
-						+ productElement.select(".mat-caption.text-color-black.product-name").attr("href");
-				System.out.println("Product URL: " + productUrl);
-
-				if (productService.productExists(productName, marketId)) {
-					System.out.println("Exists!");
-					continue;
-				}
-				Product product = new Product();
-				// product.setSubCategoryId(subCategory.getSubCategoryId());
-				// product.setCategoryId(subCategory.getParentCategoryId());
-				product.setMarketProductId(defaultMarketProductId);
-				product.setProductName(productName);
-				product.setProductPrice(productPrice);
-				product.setImageUrl(imageUrl);
-				product.setProductUrl(productUrl);
-				product.setMarketId(marketId);
-
-				products.add(product);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 		return products;
 	}
 

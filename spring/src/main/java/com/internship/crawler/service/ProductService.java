@@ -1,11 +1,9 @@
 package com.internship.crawler.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.internship.crawler.model.Category;
 import com.internship.crawler.model.Product;
 import com.internship.crawler.model.SubCategory;
 import com.internship.crawler.repository.ProductRepository;

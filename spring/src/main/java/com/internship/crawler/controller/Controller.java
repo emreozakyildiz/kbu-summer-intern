@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,7 +34,7 @@ public class Controller {
 	@PostMapping("/scrape/categories")
 	public ResponseEntity<List<Category>> scrapeCategories() {
 		List<Category> categories = new ArrayList<Category>();
-		// categories.addAll(scraperService.scrapeCategoriesFromMigros());
+		categories.addAll(scraperService.scrapeCategoriesFromMigros());
 		// categories.addAll(scraperService.scrapeCategoriesFromTrendyol());
 		categories.addAll(scraperService.scrapeCategoriesFromA101());
 		List<Category> savedCategories = categoryService.addCategories(categories);
@@ -49,11 +48,12 @@ public class Controller {
 			int market = category.getMarketId();
 			switch (market) {
 			case 1: {
-				subCategories.addAll(scraperService.scrapeSubCategoriesFromA101(category));
+				// subCategories.addAll(scraperService.scrapeSubCategoriesFromA101(category));
 				break;
 			}
 			case 2: {
-				// subCategories.addAll(scraperService.scrapeSubCategoriesFromMigros(category));
+				subCategories.addAll(scraperService.scrapeSubCategoriesFromMigros(category));
+				break;
 			}
 			case 3: {
 				// subCategories.addAll(scraperService.scrapeSubCategoriesFromTrendyol(category));
