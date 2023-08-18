@@ -38,7 +38,7 @@ public class ProductService {
 	}
 
 	public boolean productExists(String productName, int marketId) {
-		Optional<Product> existingProduct = productRepository.findByProductNameAndMarketId(productName, marketId);
-		return existingProduct.isPresent();
+		long count = productRepository.countByProductNameAndMarketId(productName, marketId);
+	    return count > 0;
 	}
 }

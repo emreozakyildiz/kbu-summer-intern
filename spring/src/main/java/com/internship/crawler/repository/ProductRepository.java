@@ -11,4 +11,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 	Optional<Product> findByProductNameAndMarketId(String productName, int marketId);
 
 	List<Product> findAllByMarketId(int marketId);
+
+	long countByProductNameAndMarketId(String productName, int marketId);
 }

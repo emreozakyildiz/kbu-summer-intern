@@ -21,11 +21,11 @@ public class Product {
 	String imageUrl;
 	String productUrl;
 	int marketId;
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "category_id")
 	private Category category;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "sub_category_id")
 	private SubCategory subCategory;
 

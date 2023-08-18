@@ -19,7 +19,7 @@ public class SubCategory {
 	String subCategoryLink;
 	int pages;
 	int marketId;
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "category_id")
 	private Category category;
 
