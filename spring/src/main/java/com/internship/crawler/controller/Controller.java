@@ -48,7 +48,7 @@ public class Controller {
 			int market = category.getMarketId();
 			switch (market) {
 			case 1: {
-				// subCategories.addAll(scraperService.scrapeSubCategoriesFromA101(category));
+				subCategories.addAll(scraperService.scrapeSubCategoriesFromA101(category));
 				break;
 			}
 			case 2: {
@@ -74,7 +74,7 @@ public class Controller {
 			int market = subCategory.getMarketId();
 			switch (market) {
 			case 1: {
-				// products.addAll(scraperService.scrapeProductsFromA101(subCategory));
+				products.addAll(scraperService.scrapeProductsFromA101(subCategory));
 				break;
 			}
 			case 2: {

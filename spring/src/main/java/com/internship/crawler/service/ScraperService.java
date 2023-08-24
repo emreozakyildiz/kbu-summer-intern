@@ -136,12 +136,13 @@ public class ScraperService {
 					long marketProductId = Long.parseLong(
 							productElement.select("article.product-card").attr("data-sku").replaceAll("[^0-9]", ""));
 					String productName = productElement.select("h3.name").text();
-					double productPrice = Double
-							.parseDouble((productElement.select("span.current").text()).replaceAll("[^\\d.]", ""));
+					double productPrice = Double.parseDouble((productElement.select("span.current").text())
+							.replace("₺", "").replace(".", "").replace(",", ".").replace("TL", ""));
 					String imageUrl = productElement.select("figure.product-image > img").attr("src");
 					String productUrl = baseUrl + productElement.select("a.name-price").attr("href");
 
-					if (productService.productExists(productName, marketId)) {
+					if (productService.productExists(productName, marketId)
+							|| products.stream().anyMatch(p -> p.getProductName().equals(productName))) {
 						System.out.println("Exists!");
 						continue;
 					}
@@ -313,25 +314,29 @@ public class ScraperService {
 
 		try {
 			WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
-			//wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
-			//		By.cssSelector("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
+			// wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+			// By.cssSelector("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
 			wait.until(ExpectedConditions.jsReturnsValue("return document.readyState === 'complete';"));
 
 			Document document = Jsoup.parse(webDriver.getPageSource());
 			webDriver.quit();
 
 			// Elements productElements = document
-			// 		.select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
+			// .select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
 			Elements productElements = document.select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop");
 			for (Element productElement : productElements) {
 				String productName = productElement.select(".mat-caption.text-color-black.product-name").text();
 				System.out.println("Product Name:" + productName);
 				// Double productPrice = Double
-				// 		.parseDouble(productElement.select(".price-new.subtitle-1.price-new-only .amount").text()
-				// 				.replace(",", ".").replace("TL", ""));
-				// Double productPrice = Double.parseDouble(productElement.select(".amount").text().replace(",", ".").replace("TL", ""));
-				Double productPrice = Double.parseDouble(productElement.select("div.price-new span.amount").text().replace(",", ".").replace("TL", ""));
-				
+				// .parseDouble(productElement.select(".price-new.subtitle-1.price-new-only
+				// .amount").text()
+				// .replace(",", ".").replace("TL", ""));
+				// Double productPrice =
+				// Double.parseDouble(productElement.select(".amount").text().replace(",",
+				// ".").replace("TL", ""));
+				Double productPrice = Double.parseDouble(productElement.select("div.price-new span.amount").text()
+						.replace(".", "").replace(",", ".").replace("TL", ""));
+
 				System.out.println("Product Price: " + productPrice);
 				String imageUrl = productElement.select(".fe-product-image.image img").attr("src");
 				System.out.println("Image URL: " + imageUrl);
@@ -339,7 +344,8 @@ public class ScraperService {
 						+ productElement.select(".mat-caption.text-color-black.product-name").attr("href");
 				System.out.println("Product URL: " + productUrl);
 
-				if (productService.productExists(productName, marketId)) {
+				if (productService.productExists(productName, marketId)
+						|| products.stream().anyMatch(p -> p.getProductName().equals(productName))) {
 					System.out.println("Exists!");
 					continue;
 				}
