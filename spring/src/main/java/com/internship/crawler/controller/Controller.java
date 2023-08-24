@@ -74,7 +74,7 @@ public class Controller {
 			int market = subCategory.getMarketId();
 			switch (market) {
 			case 1: {
-				products.addAll(scraperService.scrapeProductsFromA101(subCategory));
+				scrapedProducts.addAll(scraperService.scrapeProductsFromA101(subCategory));
 				break;
 			}
 			case 2: {
