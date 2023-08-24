@@ -9,6 +9,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.jsoup.select.Selector.SelectorParseException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -308,29 +309,29 @@ public class ScraperService {
 		firefoxOptions.addArguments("-headless");
 		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
 
-		for (int page = 1; page <= pages; page++) {
-			//url
-		}
-
 		webDriver.get(url);
 
 		try {
 			WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
-			wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
-					By.cssSelector("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
+			//wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+			//		By.cssSelector("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
+			wait.until(ExpectedConditions.jsReturnsValue("return document.readyState === 'complete';"));
 
 			Document document = Jsoup.parse(webDriver.getPageSource());
-			webDriver.close();
+			webDriver.quit();
 
-			Elements productElements = document
-					.select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
-			System.out.println("Product Elements Length: " + productElements.size());
+			// Elements productElements = document
+			// 		.select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
+			Elements productElements = document.select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop");
 			for (Element productElement : productElements) {
 				String productName = productElement.select(".mat-caption.text-color-black.product-name").text();
 				System.out.println("Product Name:" + productName);
-				Double productPrice = Double
-						.parseDouble(productElement.select(".price-new.subtitle-1.price-new-only .amount").text()
-								.replace(",", ".").replace("TL", ""));
+				// Double productPrice = Double
+				// 		.parseDouble(productElement.select(".price-new.subtitle-1.price-new-only .amount").text()
+				// 				.replace(",", ".").replace("TL", ""));
+				// Double productPrice = Double.parseDouble(productElement.select(".amount").text().replace(",", ".").replace("TL", ""));
+				Double productPrice = Double.parseDouble(productElement.select("div.price-new span.amount").text().replace(",", ".").replace("TL", ""));
+				
 				System.out.println("Product Price: " + productPrice);
 				String imageUrl = productElement.select(".fe-product-image.image img").attr("src");
 				System.out.println("Image URL: " + imageUrl);
@@ -354,6 +355,8 @@ public class ScraperService {
 
 				products.add(product);
 			}
+		} catch (SelectorParseException e) {
+			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -69,14 +69,27 @@ public class Controller {
 	@PostMapping("/scrape/products")
 	public ResponseEntity<List<Product>> scrapeProducts() {
 		List<Product> products = new ArrayList<Product>();
-		List<Product> savedProducts = new ArrayList<Product>();
 		for (SubCategory subCategory : categoryService.getAllSubCategories()) {
-			products.addAll(scraperService.scrapeProductsFromA101(subCategory));
-			// products.addAll(scraperService.scrapeProductsFromMigros(subCategory));
-			// products.addAll(scraperService.scrapeProductsFromTrendyol(subCategory));
-			savedProducts.addAll(productService.addProducts(products, subCategory));
+			List<Product> scrapedProducts = new ArrayList<Product>();
+			int market = subCategory.getMarketId();
+			switch (market) {
+			case 1: {
+				// products.addAll(scraperService.scrapeProductsFromA101(subCategory));
+				break;
+			}
+			case 2: {
+				scrapedProducts.addAll(scraperService.scrapeProductsFromMigros(subCategory));
+				break;
+			}
+			case 3: {
+				// products.addAll(scraperService.scrapeProductsFromTrendyol(subCategory));
+			}
+			default:
+				throw new IllegalArgumentException("Unexpected value: " + subCategory.getMarketId());
+			}
+			products = productService.addProducts(scrapedProducts, subCategory);
 		}
-		return new ResponseEntity<>(savedProducts, HttpStatus.CREATED);
+		return new ResponseEntity<>(products, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/categories")
