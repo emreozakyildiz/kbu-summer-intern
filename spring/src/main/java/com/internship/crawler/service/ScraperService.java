@@ -277,7 +277,8 @@ public class ScraperService {
 				String subCategoryName = subCategoryElement.text().replaceAll("\\s*\\(\\d+\\)\\s*", "");
 				String subCategoryLink = subCategoryElement.attr("href");
 
-				if (categoryService.subCategoryExists(subCategoryName, marketId))
+				if (categoryService.subCategoryExists(subCategoryName, marketId)
+						|| subCategories.stream().anyMatch(s -> s.getSubCategoryLink().equals(subCategoryLink)))
 					continue;
 
 				SubCategory subCategory = new SubCategory();
@@ -408,18 +409,17 @@ public class ScraperService {
 		return categories;
 	}
 
-	public List<SubCategory> scrapeSubCategoriesFromTrendyol() {
+	public List<SubCategory> scrapeSubCategoriesFromTrendyol(Category category) {
 		final String baseUrl = "https://www.trendyol.com";
 		final int marketId = 3;
 		int maxPageNumber = 1;
 
-		List<Category> categories = categoryService.getAllCategoriesByMarket(marketId);
 		List<SubCategory> subCategories = new ArrayList<SubCategory>();
 
 		FirefoxOptions firefoxOptions = new FirefoxOptions();
 		firefoxOptions.addArguments("-headless");
 		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-		webDriver.get(categories.get(0).getCategoryLink());
+		webDriver.get(category.getCategoryLink());
 
 		Document document = Jsoup.parse(webDriver.getPageSource());
 		Elements subCategoryElements = document.select("div.sub-nav a.sub-category-header");
@@ -430,10 +430,12 @@ public class ScraperService {
 				String subCategoryName = subCategoryElement.text();
 				String subCategoryLink = subCategoryElement.attr("href");
 
-				if (categoryService.subCategoryExists(subCategoryName, marketId))
+				if (categoryService.subCategoryLinkExists(subCategoryLink, marketId)
+						|| subCategories.stream().anyMatch(s -> s.getSubCategoryLink().equals(subCategoryLink)))
 					continue;
 
 				SubCategory subCategory = new SubCategory();
+				subCategory.setCategory(category);
 				subCategory.setSubCategoryName(subCategoryName);
 				subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
 				subCategory.setPages(maxPageNumber);
@@ -448,126 +450,15 @@ public class ScraperService {
 		return subCategories;
 	}
 
-	public List<SubCategory> oldScrapeSubCategoriesFromMigros() {
-		final String baseUrl = "https://www.migros.com.tr";
-		final int marketId = 2;
-		int maxPageNumber = 1;
-
-		List<Category> categories = categoryService.getAllCategoriesByMarket(marketId);
-		List<SubCategory> subCategories = new ArrayList<SubCategory>();
-
-		FirefoxOptions firefoxOptions = new FirefoxOptions();
-		firefoxOptions.addArguments("-headless");
-		WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-		WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(15));
-		Actions actions = new Actions(webDriver);
-
-		try {
-			for (Category category : categories) {
-				webDriver.get(category.getCategoryLink());
-
-				WebElement subCategoryMenu = wait.until(ExpectedConditions
-						.visibilityOfElementLocated(By.cssSelector(".filter__subcategories > div:nth-child(2)")));
-				actions.moveToElement(subCategoryMenu).perform();
-
-				Document document = Jsoup.parse(webDriver.getPageSource());
-				Elements subCategoryElements = document.select(".items a.text-color-black.mat-body-2.ng-star-inserted");
-
-				for (Element subCategoryElement : subCategoryElements) {
-					String subCategoryName = subCategoryElement.text();
-					String subCategoryLink = subCategoryElement.attr("href");
-
-					if (categoryService.subCategoryExists(subCategoryName, marketId))
-						continue;
-
-					SubCategory subCategory = new SubCategory();
-					subCategory.setSubCategoryName(subCategoryName);
-					subCategory.setSubCategoryLink(baseUrl + subCategoryLink);
-					subCategory.setPages(maxPageNumber);
-					subCategory.setMarketId(marketId);
-
-					subCategories.add(subCategory);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-		}
-
-		return subCategories;
-	}
-
-	public List<Product> oldScrapeProductsFromMigros() {
-		final String baseUrl = "https://www.migros.com.tr";
-		int marketId = 2;
-		long defaultMarketProductId = 0;
-		List<SubCategory> subCategories = categoryService.getAllSubCategoriesByMarket(marketId);
-		List<Product> products = new ArrayList<>();
-
-		for (SubCategory subCategory : subCategories) {
-			String url = subCategory.getSubCategoryLink();
-
-			FirefoxOptions firefoxOptions = new FirefoxOptions();
-			firefoxOptions.addArguments("-headless");
-			WebDriver webDriver = new FirefoxDriver(firefoxOptions);
-			webDriver.get(url);
-
-			try {
-				WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
-				wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
-						By.cssSelector("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child")));
-
-				Document document = Jsoup.parse(webDriver.getPageSource());
-				webDriver.close();
-
-				Elements productElements = document
-						.select("sm-list-page-item.mdc-layout-grid__cell--span-2-desktop:nth-child");
-				System.out.println("Product Elements Length: " + productElements.size());
-				for (Element productElement : productElements) {
-					String productName = productElement.select(".mat-caption.text-color-black.product-name").text();
-					System.out.println("Product Name:" + productName);
-					Double productPrice = Double
-							.parseDouble(productElement.select(".price-new.subtitle-1.price-new-only .amount").text()
-									.replace(",", ".").replace("TL", ""));
-					System.out.println("Product Price: " + productPrice);
-					String imageUrl = productElement.select(".fe-product-image.image img").attr("src");
-					System.out.println("Image URL: " + imageUrl);
-					String productUrl = baseUrl
-							+ productElement.select(".mat-caption.text-color-black.product-name").attr("href");
-					System.out.println("Product URL: " + productUrl);
-
-					if (productService.productExists(productName, marketId)) {
-						System.out.println("Exists!");
-						continue;
-					}
-					Product product = new Product();
-					// product.setSubCategoryId(subCategory.getSubCategoryId());
-					// product.setCategoryId(subCategory.getParentCategoryId());
-					product.setMarketProductId(defaultMarketProductId);
-					product.setProductName(productName);
-					product.setProductPrice(productPrice);
-					product.setImageUrl(imageUrl);
-					product.setProductUrl(productUrl);
-					product.setMarketId(marketId);
-
-					products.add(product);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return products;
-	}
-
-	public List<Product> scrapeProductsFromTrendyol() {
+	public List<Product> scrapeProductsFromTrendyol(SubCategory subCategory) {
 		final String baseUrl = "https://www.trendyol.com";
 		int marketId = 3;
 		long defaultMarketProductId = 0;
 		List<SubCategory> subCategories = categoryService.getAllSubCategoriesByMarket(marketId);
 		List<Product> products = new ArrayList<>();
 
-		for (SubCategory subCategory : subCategories) {
-			String url = subCategory.getSubCategoryLink();
+		for (SubCategory subCategory1 : subCategories) {
+			String url = subCategory1.getSubCategoryLink();
 
 			FirefoxOptions firefoxOptions = new FirefoxOptions();
 			firefoxOptions.addArguments("-headless");
@@ -575,20 +466,31 @@ public class ScraperService {
 			webDriver.get(url);
 
 			JavascriptExecutor jsExecutor = (JavascriptExecutor) webDriver;
+			int windowHeight = ((Number) jsExecutor.executeScript("return window.innerHeight")).intValue();
+			int documentHeight = ((Number) jsExecutor.executeScript("return document.documentElement.scrollHeight"))
+					.intValue();
+			double scrollThreshold = 0.95; // Adjust this value to control when to stop scrolling (e.g., 0.6 for 60%)
+
 			while (true) {
-				long currentHeight = (long) jsExecutor.executeScript(
-						"return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );");
-				jsExecutor.executeScript("window.scrollTo(0, " + currentHeight + ");");
+				jsExecutor.executeScript("window.scrollBy(0, " + windowHeight / 8 + ");");
 				try {
-					Thread.sleep(2000);
+					Thread.sleep(250); // Adjust this value to control the delay between scrolls
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				long newHeight = (long) jsExecutor.executeScript(
-						"return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );");
-				if (newHeight == currentHeight) {
-					break;
+
+				// Update the document height inside the loop to reflect the current state
+				documentHeight = ((Number) jsExecutor.executeScript("return document.documentElement.scrollHeight"))
+						.intValue();
+
+				int currentScrollY = ((Number) jsExecutor.executeScript("return window.scrollY")).intValue();
+				int maxScrollY = documentHeight - windowHeight;
+				double scrollPercentage = (double) currentScrollY / maxScrollY;
+
+				if (scrollPercentage >= scrollThreshold) {
+					break; // Stop scrolling when you reach the desired scroll position
 				}
+
 			}
 
 			try {
@@ -602,8 +504,9 @@ public class ScraperService {
 					System.out.println("Product Name : " + productName);
 					System.out
 							.println("Product Price: " + productElement.select(".prc-box-dscntd").text().split(" ")[0]);
-					double productPrice = Double.parseDouble(
-							productElement.select(".prc-box-dscntd").text().split(" ")[0].replace(",", "."));
+					double productPrice = Double
+							.parseDouble(productElement.select(".prc-box-dscntd").text().split(" ")[0].replace(".", "")
+									.replace(",", "."));
 
 					String imageUrl = productElement.select(".p-card-img").attr("src");
 					System.out.println("Product Image : " + imageUrl);
@@ -611,7 +514,8 @@ public class ScraperService {
 					System.out.println("Product Url : " + productUrl);
 					System.out.println("-----------");
 
-					if (productService.productExists(productName, marketId)) {
+					if (productService.productExists(productName, marketId)
+							|| products.stream().anyMatch(p -> p.getProductName().equals(productName))) {
 						System.out.println("Exists!");
 						continue;
 					}

@@ -1,6 +1,7 @@
 package com.internship.crawler.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -57,4 +58,17 @@ public class CategoryService {
 				marketId);
 		return existingSubCategory != null;
 	}
+	
+	/*
+	 * public boolean canceledSubCategoryLinkExists(String subCategoryLink, int
+	 * marketId) { SubCategory existingSubCategory =
+	 * subCategoryRepository.findBySubCategoryLinkAndMarketId(subCategoryLink,
+	 * marketId); return existingSubCategory != null; }
+	 */
+	
+	public boolean subCategoryLinkExists(String subCategoryLink, int marketId) {
+	    List<SubCategory> matchingSubCategories = subCategoryRepository.findBySubCategoryLinkAndMarketId(subCategoryLink, marketId);
+	    return !matchingSubCategories.isEmpty();
+	}
+
 }

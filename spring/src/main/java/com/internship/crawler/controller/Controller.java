@@ -34,9 +34,9 @@ public class Controller {
 	@PostMapping("/scrape/categories")
 	public ResponseEntity<List<Category>> scrapeCategories() {
 		List<Category> categories = new ArrayList<Category>();
-		categories.addAll(scraperService.scrapeCategoriesFromMigros());
-		// categories.addAll(scraperService.scrapeCategoriesFromTrendyol());
-		categories.addAll(scraperService.scrapeCategoriesFromA101());
+		// categories.addAll(scraperService.scrapeCategoriesFromA101());
+		// categories.addAll(scraperService.scrapeCategoriesFromMigros());
+		categories.addAll(scraperService.scrapeCategoriesFromTrendyol());
 		List<Category> savedCategories = categoryService.addCategories(categories);
 		return new ResponseEntity<>(savedCategories, HttpStatus.CREATED);
 	}
@@ -44,22 +44,24 @@ public class Controller {
 	@PostMapping("/scrape/sub-categories")
 	public ResponseEntity<List<SubCategory>> scrapeSubCategories() {
 		List<SubCategory> subCategories = new ArrayList<SubCategory>();
+		outer:
 		for (Category category : categoryService.getAllCategories()) {
 			int market = category.getMarketId();
 			switch (market) {
 			case 1: {
-				subCategories.addAll(scraperService.scrapeSubCategoriesFromA101(category));
+				// subCategories.addAll(scraperService.scrapeSubCategoriesFromA101(category));
 				break;
 			}
 			case 2: {
-				subCategories.addAll(scraperService.scrapeSubCategoriesFromMigros(category));
+				// subCategories.addAll(scraperService.scrapeSubCategoriesFromMigros(category));
 				break;
 			}
 			case 3: {
-				// subCategories.addAll(scraperService.scrapeSubCategoriesFromTrendyol(category));
+				subCategories.addAll(scraperService.scrapeSubCategoriesFromTrendyol(category));
+				break outer;
 			}
 			default:
-				throw new IllegalArgumentException("Unexpected value: " + category.getMarketId());
+				throw new IllegalArgumentException("Market has ID:" + category.getMarketId() + " could not found!");
 			}
 		}
 		List<SubCategory> savedSubCategories = categoryService.addSubCategories(subCategories);
@@ -74,15 +76,15 @@ public class Controller {
 			int market = subCategory.getMarketId();
 			switch (market) {
 			case 1: {
-				scrapedProducts.addAll(scraperService.scrapeProductsFromA101(subCategory));
+				// scrapedProducts.addAll(scraperService.scrapeProductsFromA101(subCategory));
 				break;
 			}
 			case 2: {
-				scrapedProducts.addAll(scraperService.scrapeProductsFromMigros(subCategory));
+				// scrapedProducts.addAll(scraperService.scrapeProductsFromMigros(subCategory));
 				break;
 			}
 			case 3: {
-				// products.addAll(scraperService.scrapeProductsFromTrendyol(subCategory));
+				scrapedProducts.addAll(scraperService.scrapeProductsFromTrendyol(subCategory));
 			}
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + subCategory.getMarketId());
