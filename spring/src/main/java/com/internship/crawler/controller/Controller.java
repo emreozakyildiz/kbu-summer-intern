@@ -71,6 +71,7 @@ public class Controller {
 	@PostMapping("/scrape/products")
 	public ResponseEntity<List<Product>> scrapeProducts() {
 		List<Product> products = new ArrayList<Product>();
+		outer:
 		for (SubCategory subCategory : categoryService.getAllSubCategories()) {
 			List<Product> scrapedProducts = new ArrayList<Product>();
 			int market = subCategory.getMarketId();
@@ -85,11 +86,13 @@ public class Controller {
 			}
 			case 3: {
 				scrapedProducts.addAll(scraperService.scrapeProductsFromTrendyol(subCategory));
+				break;
 			}
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + subCategory.getMarketId());
 			}
 			products = productService.addProducts(scrapedProducts, subCategory);
+			break outer;
 		}
 		return new ResponseEntity<>(products, HttpStatus.CREATED);
 	}
